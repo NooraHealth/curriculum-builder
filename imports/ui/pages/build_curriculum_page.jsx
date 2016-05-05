@@ -6,3 +6,8 @@
  * Uploads files and saves documents to the MongoDB
  *****/
 
+let BuildCurriculumPage = React.createClass({
+
+});
+
+module.exports.BuildCurriculumPage = BuildCurriculumPage;
