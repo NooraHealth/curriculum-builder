@@ -1,0 +1,3 @@
+[submodule "packages/mongo-schemas"]
+	path = packages/mongo-schemas
+	url = git@github.com:NooraHealth/mongo-schemas.git
