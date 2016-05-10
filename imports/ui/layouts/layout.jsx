@@ -1,6 +1,7 @@
+import React from 'react';
 
-let Layout = React.createClass({
-  render: function(){
+const Layout = React.createClass({
+  render() {
     return (
       <div>
         <main>
@@ -9,7 +10,6 @@ let Layout = React.createClass({
       </div>
     )
   }
-
 });
 
-module.exports.Layout = Layout;
+export default Layout;

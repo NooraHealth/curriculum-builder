@@ -5,9 +5,12 @@
  * any updates made through the child components.
  * Uploads files and saves documents to the MongoDB
  *****/
+import React from 'react';
 
-let BuildCurriculumPage = React.createClass({
-
+const BuildCurriculumPage = React.createClass({
+  render() {
+    return <div>Hello World</div>;
+  }
 });
 
-module.exports.BuildCurriculumPage = BuildCurriculumPage;
+export default BuildCurriculumPage;
