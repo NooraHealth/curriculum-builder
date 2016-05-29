@@ -12,12 +12,15 @@ import { Modal } from '../components/semantic-ui/modal';
 import { LessonForm } from '../components/forms/lesson_form';
 import { LessonsListItem } from './build_curriculum_page/lessons_list_item';
 
+import { Curriculums } from 'meteor/noorahealth:mongo-schemas/schemas/curriculums';
+
 const conditions = ["Cardiac Surgery", "Diabetes", "Neonatology"];
 const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 
 const BuildCurriculumPage = React.createClass({
   getInitialState() {
     return {
+      _id: undefined,
       title: "",
       condition: conditions[0],
       language: languages[0],
@@ -47,6 +50,8 @@ const BuildCurriculumPage = React.createClass({
             { languages.map(language => <option key={ language }>{ language }</option>) }
           </select>
         </div>
+
+        <button className="ui primary button" onClick={ this.saveCurriculum }>Save</button>
       </form>
     );
   },
@@ -118,6 +123,25 @@ const BuildCurriculumPage = React.createClass({
     this.setState({
       editingLesson: undefined,
       lessonInfoModalShown: false
+    });
+  },
+  saveCurriculum(event) {
+    event.preventDefault();
+
+    Curriculums.insert({
+      title: this.state.title,
+      condition: this.state.condition,
+      language: this.state.language,
+      lessons: []
+    }, (error, _id) => {
+      if (error) {
+        // TODO error handling
+        console.error(error);
+      } else {
+        this.setState({
+          _id
+        })
+      }
     });
   },
   saveLesson(lesson) {
