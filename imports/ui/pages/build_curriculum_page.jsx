@@ -93,7 +93,7 @@ const BuildCurriculumPage = React.createClass({
       </div>
     );
   },
-  onLanguageChange(event) {
+  onTitleChange(event) {
     this.setState({
       title: event.target.value
     });
