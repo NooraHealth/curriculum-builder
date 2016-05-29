@@ -12,12 +12,15 @@ import { Modal } from '../components/semantic-ui/modal';
 import { LessonForm } from '../components/forms/lesson_form';
 import { LessonsListItem } from './build_curriculum_page/lessons_list_item';
 
+import { NagsMixin } from '../mixins/nags';
+
 import { Curriculums } from 'meteor/noorahealth:mongo-schemas/schemas/curriculums';
 
 const conditions = ["Cardiac Surgery", "Diabetes", "Neonatology"];
 const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 
 const BuildCurriculumPage = React.createClass({
+  mixins: [NagsMixin],
   getInitialState() {
     return {
       _id: undefined,
@@ -82,6 +85,7 @@ const BuildCurriculumPage = React.createClass({
   render() {
     return (
       <div className="ui segments">
+        { this.renderNags() }
         { this.renderLessonInfoModal() }
 
         <div className="ui segment">
@@ -138,9 +142,10 @@ const BuildCurriculumPage = React.createClass({
         // TODO error handling
         console.error(error);
       } else {
+        this.addNag("Curriculum saved");
         this.setState({
           _id
-        })
+        });
       }
     });
   },
