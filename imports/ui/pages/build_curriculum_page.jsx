@@ -132,21 +132,37 @@ const BuildCurriculumPage = React.createClass({
   saveCurriculum(event) {
     event.preventDefault();
 
-    Curriculums.insert({
-      title: this.state.title,
-      condition: this.state.condition,
-      language: this.state.language,
-      lessons: []
-    }, (error, _id) => {
-      if (error) {
-        // TODO error handling
-        console.error(error);
+    const promise = new Promise((resolve, reject) => {
+      const curriculum = {
+        title: this.state.title,
+        condition: this.state.condition,
+        language: this.state.language,
+        lessons: []
+      };
+
+      const callback = (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      };
+
+      if (this.state._id === undefined) {
+        Curriculums.insert(curriculum, callback);
       } else {
-        this.addNag("Curriculum saved");
-        this.setState({
-          _id
-        });
+        Curriculums.update(this.state._id, {'$set': curriculum}, callback);
       }
+    });
+
+    promise.then((results) => {
+      this.addNag("Curriculum saved");
+      if (typeof results === 'string') {
+        this.setState({_id: results});
+      }
+    }, (error) => {
+      // TODO error handling
+      console.error(error);
     });
   },
   saveLesson(lesson) {
