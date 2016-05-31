@@ -29,10 +29,10 @@ const BuildCurriculumPage = React.createClass({
       language: languages[0],
       lessons: [],
 
-      lessonInfoModalShown: false
+      showLessonFormModal: false
     };
   },
-  renderHeader() {
+  renderCurriculumForm() {
     return (
       <form className="ui form">
         <div className="field">
@@ -58,10 +58,10 @@ const BuildCurriculumPage = React.createClass({
       </form>
     );
   },
-  renderLessonInfoModal() {
-    if (this.state.lessonInfoModalShown) {
+  renderLessonFormModal() {
+    if (this.state.showLessonFormModal) {
       return (
-        <Modal onHide={ this.hideLessonInfoModal }>
+        <Modal onHide={ this.hideLessonFormModal }>
           <div className="content">
             <LessonForm lesson={ this.state.editingLesson } onSubmit={ this.saveLesson } />
           </div>
@@ -75,7 +75,7 @@ const BuildCurriculumPage = React.createClass({
     if (this.state.lessons.length > 0) {
       return (
         <div className="ui list">
-          { this.state.lessons.map(lesson => <LessonsListItem lesson={ lesson } key={ lesson.id } edit={ this.editLessonFactory(lesson) } />) }
+          { this.state.lessons.map(lesson => <LessonsListItem lesson={ lesson } key={ lesson.id } edit={ this.editLesson.bind(this, lesson) } />) }
         </div>
       );
     } else {
@@ -86,14 +86,14 @@ const BuildCurriculumPage = React.createClass({
     return (
       <div className="ui segments">
         { this.renderNags() }
-        { this.renderLessonInfoModal() }
+        { this.renderLessonFormModal() }
 
         <div className="ui segment">
-          { this.renderHeader() }
+          { this.renderCurriculumForm() }
         </div>
 
         <div className="ui segment">
-          <button className="ui button" onClick={ this.newLesson }>Add Lesson</button>
+          <button className="ui button" onClick={ this.editLesson.bind(this, undefined) }>Add Lesson</button>
 
           { this.state.lessons.length > 0 && <div className="ui divider" /> }
 
@@ -115,18 +115,6 @@ const BuildCurriculumPage = React.createClass({
   onLanguageChange(event) {
     this.setState({
       language: event.target.value
-    });
-  },
-  newLesson(event) {
-    event.preventDefault();
-    this.setState({
-      lessonInfoModalShown: true
-    });
-  },
-  hideLessonInfoModal() {
-    this.setState({
-      editingLesson: undefined,
-      lessonInfoModalShown: false
     });
   },
   saveCurriculum(event) {
@@ -165,6 +153,12 @@ const BuildCurriculumPage = React.createClass({
       console.error(error);
     });
   },
+  editLesson(lesson) {
+    this.setState({
+      showLessonFormModal: true,
+      editingLesson: lesson
+    });
+  },
   saveLesson(lesson) {
     const lessons = this.state.lessons;
 
@@ -185,16 +179,14 @@ const BuildCurriculumPage = React.createClass({
 
     this.setState({
       lessons,
-      lessonInfoModalShown: false
+      showLessonFormModal: false
     });
   },
-  editLessonFactory(lesson) {
-    return () => {
-      this.setState({
-        lessonInfoModalShown: true,
-        editingLesson: lesson
-      });
-    };
+  hideLessonFormModal() {
+    this.setState({
+      editingLesson: undefined,
+      showLessonFormModal: false
+    });
   }
 });
 
