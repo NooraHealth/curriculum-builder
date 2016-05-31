@@ -6,24 +6,16 @@ export const LessonForm = React.createClass({
     onSubmit: React.PropTypes.func.isRequired
   },
   getInitialState() {
-    if (this.props.lesson) {
-      return {
-        id: this.props.lesson.id,
-        title: this.props.lesson.title
-        // TODO deal with image
-      };
-    } else {
-      return {
-        title: ""
-      }
-    }
+    return {
+      lesson: this.props.lesson
+    };
   },
   render() {
     return (
       <form className="ui form">
         <div className="field">
           <label>Title</label>
-          <input type="text" value={ this.state.title } onChange={ this.onTitleChange } />
+          <input type="text" value={ this.state.lesson.title } onChange={ this.onTitleChange } />
         </div>
 
         <div className="field">
@@ -36,18 +28,18 @@ export const LessonForm = React.createClass({
     );
   },
   onTitleChange(event) {
-    this.setState({
-      title: event.target.value
-    });
+    const lesson = this.state.lesson.set('title', event.target.value);
+    this.setState({lesson});
   },
   onImageChange(event) {
-    this.setState({
-      image: event.target.files[0]
-    });
+    // Use ref and upload on submit
   },
   onSubmit(event) {
     event.preventDefault();
 
-    this.props.onSubmit(this.state);
+    // 1. Upload image
+    // 2. Set update URL
+    // 3. Callback
+    this.props.onSubmit(this.state.lesson);
   }
 });

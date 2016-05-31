@@ -6,6 +6,7 @@
  * Uploads files and saves documents to the MongoDB
  *****/
 import React from 'react';
+import Immutable from 'immutable';
 
 import { Modal } from '../components/semantic-ui/modal';
 
@@ -15,6 +16,9 @@ import { LessonsListItem } from './build_curriculum_page/lessons_list_item';
 import { NagsMixin } from '../mixins/nags';
 
 import { Curriculums } from 'meteor/noorahealth:mongo-schemas/schemas/curriculums';
+import { Lessons } from 'meteor/noorahealth:mongo-schemas/schemas/lessons';
+
+import { Lesson } from '../../model/lesson';
 
 const conditions = ["Cardiac Surgery", "Diabetes", "Neonatology"];
 const languages  = ["Hindi", "English", "Kannada", "Tamil"];
@@ -27,7 +31,7 @@ const BuildCurriculumPage = React.createClass({
       title: "",
       condition: conditions[0],
       language: languages[0],
-      lessons: [],
+      lessons: Immutable.List(),
 
       showLessonFormModal: false
     };
@@ -72,7 +76,7 @@ const BuildCurriculumPage = React.createClass({
     }
   },
   renderLessons() {
-    if (this.state.lessons.length > 0) {
+    if (this.state.lessons.size > 0) {
       return (
         <div className="ui list">
           { this.state.lessons.map(lesson => <LessonsListItem lesson={ lesson } key={ lesson.id } edit={ this.editLesson.bind(this, lesson) } />) }
@@ -153,33 +157,53 @@ const BuildCurriculumPage = React.createClass({
       console.error(error);
     });
   },
-  editLesson(lesson) {
+  editLesson(lesson = new Lesson()) {
     this.setState({
       showLessonFormModal: true,
       editingLesson: lesson
     });
   },
   saveLesson(lesson) {
-    const lessons = this.state.lessons;
+    let resolve, reject;
+    const promise = new Promise((_resolve, _reject) => {
+      resolve = _resolve;
+      reject  = _reject;
+    });
 
-    if (lesson.id === undefined) { // New lesson
-      lesson.id = lessons.length + 1;
-      lessons.push(lesson);
+    if (lesson._id === '') { // New lesson
+      Lessons.insert(lesson.toJS(), (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(lesson.set('_id', result));
+        }
+      });
     } else {
-      // TODO Rethink how to deal with saving exisitng lesson
-      // From experience, deeply altering the state is a very bad idea and can
-      // lead to the UI to fail silently (when the component is buggy that is)
-      // and is extremely hard to debug.
-      // Perhaps we can use something like ImmutableJS to solve this.
-
-      const existingLesson = this.state.lessons.find(x => x.id === lesson.id);
-      existingLesson.title = lesson.title;
-      existingLesson.image = lesson.title;
+      Lessons.update(lesson._id, {'$set': lesson.toJS()}, (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(lesson);
+        }
+      });
     }
 
-    this.setState({
-      lessons,
-      showLessonFormModal: false
+    promise.then(lesson => {
+      let lessons = this.state.lessons;
+      const index = lessons.findKey(l => l._id === lesson._id);
+
+      if (index === undefined) {
+        lessons = lessons.push(lesson);
+      } else {
+        lessons = lessons.set(index, lesson);
+      }
+
+      this.setState({
+        lessons,
+        showLessonFormModal: false
+      });
+    }, error => {
+      console.error(error);
     });
   },
   hideLessonFormModal() {
