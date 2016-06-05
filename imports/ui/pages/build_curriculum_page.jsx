@@ -15,10 +15,10 @@ import { LessonsListItem } from './build_curriculum_page/lessons_list_item';
 
 import { NagsMixin } from '../mixins/nags';
 
-import { Curriculums } from 'meteor/noorahealth:mongo-schemas/schemas/curriculums';
-import { Lessons } from 'meteor/noorahealth:mongo-schemas/schemas/lessons';
+import { Curriculums } from 'meteor/noorahealth:mongo-schemas';
 
-import { Lesson } from '../../model/lesson';
+import '../../api/curriculums';
+import { Lesson } from '../../api/lessons';
 
 const conditions = ["Cardiac Surgery", "Diabetes", "Neonatology"];
 const languages  = ["Hindi", "English", "Kannada", "Tamil"];
@@ -79,7 +79,7 @@ const BuildCurriculumPage = React.createClass({
     if (this.state.lessons.size > 0) {
       return (
         <div className="ui list">
-          { this.state.lessons.map(lesson => <LessonsListItem lesson={ lesson } key={ lesson.id } edit={ this.editLesson.bind(this, lesson) } />) }
+          { this.state.lessons.map(lesson => <LessonsListItem lesson={ lesson } key={ lesson._id } edit={ this.editLesson.bind(this, lesson) } />) }
         </div>
       );
     } else {
@@ -124,37 +124,24 @@ const BuildCurriculumPage = React.createClass({
   saveCurriculum(event) {
     event.preventDefault();
 
-    const promise = new Promise((resolve, reject) => {
-      const curriculum = {
-        title: this.state.title,
-        condition: this.state.condition,
-        language: this.state.language,
-        lessons: []
-      };
-
-      const callback = (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results);
-        }
-      };
-
-      if (this.state._id === undefined) {
-        Curriculums.insert(curriculum, callback);
+    Meteor.call('curriculums.upsert', {
+      _id: this.state._id,
+      title: this.state.title,
+      condition: this.state.condition,
+      language: this.state.language,
+      lessons: []
+    }, (error, results) => {
+      if (error) {
+        console.error(error);
       } else {
-        Curriculums.update(this.state._id, {'$set': curriculum}, callback);
-      }
-    });
+        if ("insertedId" in results) {
+          this.setState({
+            _id: results.insertedId
+          });
+        }
 
-    promise.then((results) => {
-      this.addNag("Curriculum saved");
-      if (typeof results === 'string') {
-        this.setState({_id: results});
+        this.addNag("Curriculum saved");
       }
-    }, (error) => {
-      // TODO error handling
-      console.error(error);
     });
   },
   editLesson(lesson = new Lesson()) {
@@ -164,46 +151,27 @@ const BuildCurriculumPage = React.createClass({
     });
   },
   saveLesson(lesson) {
-    let resolve, reject;
-    const promise = new Promise((_resolve, _reject) => {
-      resolve = _resolve;
-      reject  = _reject;
-    });
-
-    if (lesson._id === '') { // New lesson
-      Lessons.insert(lesson.toJS(), (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(lesson.set('_id', result));
-        }
-      });
-    } else {
-      Lessons.update(lesson._id, {'$set': lesson.toJS()}, (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(lesson);
-        }
-      });
-    }
-
-    promise.then(lesson => {
-      let lessons = this.state.lessons;
-      const index = lessons.findKey(l => l._id === lesson._id);
-
-      if (index === undefined) {
-        lessons = lessons.push(lesson);
+    Meteor.call('lessons.upsert', lesson.toJS(), (error, results) => {
+      if (error) {
+        console.error(error);
       } else {
-        lessons = lessons.set(index, lesson);
-      }
+        console.log(results);
+        // TODO this is probably unnecessary after switching to container
 
-      this.setState({
-        lessons,
-        showLessonFormModal: false
-      });
-    }, error => {
-      console.error(error);
+        let lessons = this.state.lessons;
+
+        if ("insertedId" in results) {
+          lessons = lessons.push(lesson.set("_id", results.insertedId));
+        } else {
+          const index = lessons.findIndex(l => l._id === lesson._id);
+          lessons = lessons.set(index, lesson);
+        }
+
+        this.setState({
+          showLessonFormModal: false,
+          lessons
+        });
+      }
     });
   },
   hideLessonFormModal() {
