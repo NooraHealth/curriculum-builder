@@ -21,3 +21,4 @@ noorahealth:mongo-schemas
 kadira:flow-router
 semantic:ui
 flemay:less-autoprefixer
+react-meteor-data
