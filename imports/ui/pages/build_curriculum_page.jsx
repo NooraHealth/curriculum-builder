@@ -17,7 +17,7 @@ import { LessonsListItem } from './build_curriculum_page/lessons_list_item';
 
 import { NagsMixin } from '../mixins/nags';
 
-import { Curriculums } from 'meteor/noorahealth:mongo-schemas';
+import { Curriculums, Lessons } from 'meteor/noorahealth:mongo-schemas';
 
 import '../../api/curriculums';
 import { Lesson } from '../../api/lessons';
@@ -28,26 +28,29 @@ const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 const BuildCurriculumPage = React.createClass({
   mixins: [NagsMixin],
   getInitialState() {
-    const { curriculum } = this.props;
+    const { curriculum, lessons } = this.props;
+    const state = {
+      _id: undefined,
+      title: "",
+      condition: conditions[0],
+      language: languages[0],
+      lessons: Immutable.List(),
+
+      showLessonFormModal: false
+    };
 
     if (curriculum) {
-      return {
-        ...curriculum,
-        lessons: Immutable.List(),
-
-        showLessonFormModal: false
-      };
-    } else {
-      return {
-        _id: undefined,
-        title: "",
-        condition: conditions[0],
-        language: languages[0],
-        lessons: Immutable.List(),
-
-        showLessonFormModal: false
-      };
+      state._id = curriculum._id;
+      state.title = curriculum.title;
+      state.condition = curriculum.condition;
+      state.language = curriculum.language;
     }
+
+    if (lessons) {
+      state.lessons = Immutable.List(lessons);
+    }
+
+    return state;
   },
   renderCurriculumForm() {
     return (
@@ -142,7 +145,7 @@ const BuildCurriculumPage = React.createClass({
       title: this.state.title,
       condition: this.state.condition,
       language: this.state.language,
-      lessons: []
+      lessons: this.state.lessons.map(lesson => lesson._id).toArray()
     }, (error, results) => {
       if (error) {
         console.error(error);
@@ -198,14 +201,20 @@ const BuildCurriculumPage = React.createClass({
 export default BuildCurriculumPage;
 
 const BuildCurriculumPageContainer = createContainer(({ _id }) => {
-  const handle = Meteor.subscribe('curriculums', _id);
-  const loading = !handle.ready();
+  const curriculumsHandle = Meteor.subscribe('curriculums', _id);
+  const lessonsHandle = Meteor.subscribe('lessons.inCurriculum', _id);
+
+  const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
   const curriculum = Curriculums.findOne({ _id });
+  const lessons = Lessons.find().fetch();
 
   return {
     loading,
-    curriculum
+    curriculum,
+    lessons
   };
-}, ({loading, curriculum}) => loading ? <div>Loading...</div> : <BuildCurriculumPage curriculum={ curriculum } />);
+}, ({loading, curriculum, lessons}) => {
+  return loading ? <div>Loading...</div> : <BuildCurriculumPage curriculum={ curriculum } lessons={ lessons} />;
+});
 
 export { BuildCurriculumPageContainer };
