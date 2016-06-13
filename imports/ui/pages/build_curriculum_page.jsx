@@ -198,8 +198,6 @@ const BuildCurriculumPage = React.createClass({
   }
 });
 
-export default BuildCurriculumPage;
-
 const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   const curriculumsHandle = Meteor.subscribe('curriculums', _id);
   const lessonsHandle = Meteor.subscribe('lessons.inCurriculum', _id);
@@ -217,4 +215,4 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   return loading ? <div>Loading...</div> : <BuildCurriculumPage curriculum={ curriculum } lessons={ lessons} />;
 });
 
-export { BuildCurriculumPageContainer };
+export default BuildCurriculumPageContainer;
