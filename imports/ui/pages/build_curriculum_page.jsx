@@ -8,6 +8,8 @@
 import React from 'react';
 import Immutable from 'immutable';
 
+import { createContainer } from 'meteor/react-meteor-data';
+
 import { Modal } from '../components/semantic-ui/modal';
 
 import { LessonForm } from '../components/forms/lesson_form';
@@ -26,15 +28,26 @@ const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 const BuildCurriculumPage = React.createClass({
   mixins: [NagsMixin],
   getInitialState() {
-    return {
-      _id: undefined,
-      title: "",
-      condition: conditions[0],
-      language: languages[0],
-      lessons: Immutable.List(),
+    const { curriculum } = this.props;
 
-      showLessonFormModal: false
-    };
+    if (curriculum) {
+      return {
+        ...curriculum,
+        lessons: Immutable.List(),
+
+        showLessonFormModal: false
+      };
+    } else {
+      return {
+        _id: undefined,
+        title: "",
+        condition: conditions[0],
+        language: languages[0],
+        lessons: Immutable.List(),
+
+        showLessonFormModal: false
+      };
+    }
   },
   renderCurriculumForm() {
     return (
@@ -47,14 +60,14 @@ const BuildCurriculumPage = React.createClass({
         <div className="field">
           <label>Condition</label>
           <select className="ui fluid dropdown" value={ this.state.condition } onChange={ this.onConditionChange }>
-            { conditions.map(condition => <option key={ condition }>{ condition }</option>) }
+            { conditions.map(condition => <option key={ condition } value={ condition }>{ condition }</option>) }
           </select>
         </div>
 
         <div className="field">
           <label>Language</label>
           <select className="ui fluid dropdown" value={ this.state.language } onChange={ this.onLanguageChange }>
-            { languages.map(language => <option key={ language }>{ language }</option>) }
+            { languages.map(language => <option key={ language } value={ language }>{ language }</option>) }
           </select>
         </div>
 
@@ -183,3 +196,16 @@ const BuildCurriculumPage = React.createClass({
 });
 
 export default BuildCurriculumPage;
+
+const BuildCurriculumPageContainer = createContainer(({ _id }) => {
+  const handle = Meteor.subscribe('curriculums', _id);
+  const loading = !handle.ready();
+  const curriculum = Curriculums.findOne({ _id });
+
+  return {
+    loading,
+    curriculum
+  };
+}, ({loading, curriculum}) => loading ? <div>Loading...</div> : <BuildCurriculumPage curriculum={ curriculum } />);
+
+export { BuildCurriculumPageContainer };
