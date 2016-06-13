@@ -47,7 +47,7 @@ const BuildCurriculumPage = React.createClass({
     }
 
     if (lessons) {
-      state.lessons = Immutable.List(lessons);
+      state.lessons = Immutable.List(lessons.map(lesson => new Lesson(lesson)));
     }
 
     return state;
