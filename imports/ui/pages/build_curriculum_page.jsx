@@ -204,7 +204,10 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
 
   const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
   const curriculum = Curriculums.findOne({ _id });
-  const lessons = Lessons.find().fetch();
+
+  const lesson_ids = curriculum ? curriculum.lessons : [];
+
+  const lessons = Lessons.find({ _id: { $in: lesson_ids }}).fetch();
 
   return {
     loading,
