@@ -28,13 +28,12 @@ const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 const BuildCurriculumPage = React.createClass({
   mixins: [NagsMixin],
   getInitialState() {
-    const { curriculum, lessons } = this.props;
+    const { curriculum } = this.props;
     const state = {
       _id: undefined,
       title: "",
       condition: conditions[0],
       language: languages[0],
-      lessons: Immutable.List(),
 
       showLessonFormModal: false
     };
@@ -44,10 +43,6 @@ const BuildCurriculumPage = React.createClass({
       state.title = curriculum.title;
       state.condition = curriculum.condition;
       state.language = curriculum.language;
-    }
-
-    if (lessons) {
-      state.lessons = Immutable.List(lessons.map(lesson => new Lesson(lesson)));
     }
 
     return state;
@@ -92,10 +87,25 @@ const BuildCurriculumPage = React.createClass({
     }
   },
   renderLessons() {
-    if (this.state.lessons.size > 0) {
+    if (this.props.lessons.length > 0) {
       return (
         <div className="ui list">
-          { this.state.lessons.map(lesson => <LessonsListItem lesson={ lesson } key={ lesson._id } edit={ this.editLesson.bind(this, lesson) } />) }
+          { this.props.lessons.map(lesson => <LessonsListItem lesson={ lesson } key={ lesson._id } edit={ this.editLesson.bind(this, lesson) } />) }
+        </div>
+      );
+    } else {
+      return false;
+    }
+  },
+  renderLessonsSegment() {
+    if (this.state._id) {
+      return (
+        <div className="ui segment">
+          <button className="ui button" onClick={ this.editLesson.bind(this, undefined) }>Add Lesson</button>
+
+          { this.props.lessons.length > 0 && <div className="ui divider" /> }
+
+          { this.renderLessons() }
         </div>
       );
     } else {
@@ -112,13 +122,7 @@ const BuildCurriculumPage = React.createClass({
           { this.renderCurriculumForm() }
         </div>
 
-        <div className="ui segment">
-          <button className="ui button" onClick={ this.editLesson.bind(this, undefined) }>Add Lesson</button>
-
-          { this.state.lessons.length > 0 && <div className="ui divider" /> }
-
-          { this.renderLessons() }
-        </div>
+        { this.renderLessonsSegment() }
       </div>
     );
   },
@@ -145,7 +149,7 @@ const BuildCurriculumPage = React.createClass({
       title: this.state.title,
       condition: this.state.condition,
       language: this.state.language,
-      lessons: this.state.lessons.map(lesson => lesson._id).toArray()
+      lessons: this.props.lessons.map(lesson => lesson._id)
     }, (error, results) => {
       if (error) {
         console.error(error);
@@ -160,10 +164,10 @@ const BuildCurriculumPage = React.createClass({
       }
     });
   },
-  editLesson(lesson = new Lesson()) {
+  editLesson(lesson = {}) {
     this.setState({
       showLessonFormModal: true,
-      editingLesson: lesson
+      editingLesson: new Lesson(lesson)
     });
   },
   saveLesson(lesson) {
@@ -171,21 +175,12 @@ const BuildCurriculumPage = React.createClass({
       if (error) {
         console.error(error);
       } else {
-        console.log(results);
-        // TODO this is probably unnecessary after switching to container
-
-        let lessons = this.state.lessons;
-
         if ("insertedId" in results) {
-          lessons = lessons.push(lesson.set("_id", results.insertedId));
-        } else {
-          const index = lessons.findIndex(l => l._id === lesson._id);
-          lessons = lessons.set(index, lesson);
+          Meteor.call('curriculums.addLesson', this.state._id, results.insertedId);
         }
 
         this.setState({
-          showLessonFormModal: false,
-          lessons
+          showLessonFormModal: false
         });
       }
     });
@@ -200,7 +195,7 @@ const BuildCurriculumPage = React.createClass({
 
 const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   const curriculumsHandle = Meteor.subscribe('curriculums', _id);
-  const lessonsHandle = Meteor.subscribe('lessons.inCurriculum', _id);
+  const lessonsHandle = Meteor.subscribe('lessons.all');
 
   const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
   const curriculum = Curriculums.findOne({ _id });
