@@ -6,7 +6,6 @@
  * Uploads files and saves documents to the MongoDB
  *****/
 import React from 'react';
-import Immutable from 'immutable';
 
 import { createContainer } from 'meteor/react-meteor-data';
 
@@ -27,44 +26,38 @@ const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 
 const BuildCurriculumPage = React.createClass({
   mixins: [NagsMixin],
+  getDefaultProps() {
+    return {
+      loading: false,
+      curriculum: {},
+      lessons: []
+    };
+  },
   getInitialState() {
-    const { curriculum } = this.props;
-    const state = {
-      _id: undefined,
-      title: "",
-      condition: conditions[0],
-      language: languages[0],
-
+    return {
       showLessonFormModal: false
     };
-
-    if (curriculum) {
-      state._id = curriculum._id;
-      state.title = curriculum.title;
-      state.condition = curriculum.condition;
-      state.language = curriculum.language;
-    }
-
-    return state;
   },
   renderCurriculumForm() {
+    const { title, condition, language } = this.props.curriculum;
+
     return (
       <form className="ui form">
         <div className="field">
           <label>Title</label>
-          <input type="text" name="title" placeholder="New Title" value={ this.state.title } onChange={ this.onTitleChange } />
+          <input type="text" name="title" placeholder="New Title" defaultValue={ title } ref={ c => this._title = c } />
         </div>
 
         <div className="field">
           <label>Condition</label>
-          <select className="ui fluid dropdown" value={ this.state.condition } onChange={ this.onConditionChange }>
+          <select className="ui fluid dropdown" defaultValue={ condition || conditions[0] } ref={ c => this._condition = c }>
             { conditions.map(condition => <option key={ condition } value={ condition }>{ condition }</option>) }
           </select>
         </div>
 
         <div className="field">
           <label>Language</label>
-          <select className="ui fluid dropdown" value={ this.state.language } onChange={ this.onLanguageChange }>
+          <select className="ui fluid dropdown" defaultValue={ language || languages[0] } ref={ c => this._language = c }>
             { languages.map(language => <option key={ language } value={ language }>{ language }</option>) }
           </select>
         </div>
@@ -98,7 +91,7 @@ const BuildCurriculumPage = React.createClass({
     }
   },
   renderLessonsSegment() {
-    if (this.state._id) {
+    if (this.props.curriculum._id) {
       return (
         <div className="ui segment">
           <button className="ui button" onClick={ this.editLesson.bind(this, undefined) }>Add Lesson</button>
@@ -126,41 +119,24 @@ const BuildCurriculumPage = React.createClass({
       </div>
     );
   },
-  onTitleChange(event) {
-    this.setState({
-      title: event.target.value
-    });
-  },
-  onConditionChange(event) {
-    this.setState({
-      condition: event.target.value
-    });
-  },
-  onLanguageChange(event) {
-    this.setState({
-      language: event.target.value
-    });
-  },
   saveCurriculum(event) {
     event.preventDefault();
 
     Meteor.call('curriculums.upsert', {
-      _id: this.state._id,
-      title: this.state.title,
-      condition: this.state.condition,
-      language: this.state.language,
+      _id: this.props.curriculum._id,
+      title: this._title.value,
+      condition: this._condition.value,
+      language: this._language.value,
       lessons: this.props.lessons.map(lesson => lesson._id)
     }, (error, results) => {
       if (error) {
         console.error(error);
       } else {
         if ("insertedId" in results) {
-          this.setState({
-            _id: results.insertedId
-          });
+          FlowRouter.go(`/${results.insertedId}`);
+        } else {
+          this.addNag("Curriculum saved");
         }
-
-        this.addNag("Curriculum saved");
       }
     });
   },
@@ -176,7 +152,7 @@ const BuildCurriculumPage = React.createClass({
         console.error(error);
       } else {
         if ("insertedId" in results) {
-          Meteor.call('curriculums.addLesson', this.state._id, results.insertedId);
+          Meteor.call('curriculums.addLesson', this.props.curriculum._id, results.insertedId);
         }
 
         this.setState({
