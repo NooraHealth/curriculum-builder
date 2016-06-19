@@ -1,4 +1,13 @@
 import React from 'react';
+import { Tracker } from 'meteor/tracker';
+import { Slingshot } from 'meteor/edgee:slingshot';
+import path from 'path';
+
+import { Progress } from '../semantic-ui/progress';
+
+import '../../../uploads/image';
+
+const ImageUploader = new Slingshot.Upload('imageUploads');
 
 export const LessonForm = React.createClass({
   propTypes: {
@@ -10,6 +19,13 @@ export const LessonForm = React.createClass({
       lesson: this.props.lesson
     };
   },
+  renderProgressBar() {
+    if ("progress" in this.state) {
+      return <Progress progress={ this.state.progress } label="Uploading Image" />;
+    } else {
+      return false;
+    }
+  },
   render() {
     return (
       <form className="ui form">
@@ -20,8 +36,10 @@ export const LessonForm = React.createClass({
 
         <div className="field">
           <label>Image</label>
-          <input type="file" onChange={ this.onImageChange } />
+          <input type="file" ref={ c => this._image = c } />
         </div>
+
+        { this.renderProgressBar() }
 
         <button className="ui primary button" onClick={ this.onSubmit }>Save</button>
       </form>
@@ -31,15 +49,30 @@ export const LessonForm = React.createClass({
     const lesson = this.state.lesson.set('title', event.target.value);
     this.setState({lesson});
   },
-  onImageChange(event) {
-    // Use ref and upload on submit
-  },
   onSubmit(event) {
     event.preventDefault();
 
-    // 1. Upload image
-    // 2. Set update URL
-    // 3. Callback
-    this.props.onSubmit(this.state.lesson);
+    const image = this._image.files[0]; // TODO validation
+
+    ImageUploader.send(image, (error, url) => {
+      if (error) {
+        console.error(error);
+      } else {
+        const filename = path.basename(url);
+        const lesson = this.state.lesson.set('image', filename);
+        this.setState({lesson});
+        this.props.onSubmit(lesson);
+      }
+    });
+
+    Tracker.autorun(c => {
+      const progress = ImageUploader.progress();
+
+      this.setState({progress});
+
+      if (progress === 1) {
+        c.stop();
+      }
+    });
   }
 });
