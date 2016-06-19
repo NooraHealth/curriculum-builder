@@ -7,7 +7,7 @@ import { Lessons } from 'meteor/noorahealth:mongo-schemas';
 const Lesson = Immutable.Record({
   _id: '',
   title: '',
-  image: 'smileyface.jpg',
+  image: '',
   modules: Immutable.List()
 });
 

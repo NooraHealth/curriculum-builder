@@ -37,9 +37,10 @@ export const LessonForm = React.createClass({
     }
   },
   renderImagePreview() {
+    const existingImageURL = this.state.lesson.image && imageURL(this.state.lesson.image);
     return (
       <div style={ {display: 'flex', justifyContent: 'center'} }>
-        { this.renderImage(imageURL(this.state.lesson.image), 'Existing image:') }
+        { this.renderImage(existingImageURL, 'Existing image:') }
         { this.renderImage(this.state.previewURL, 'New image:') }
       </div>
     );
