@@ -22,11 +22,11 @@ if (Meteor.isServer) {
       const extension = path.extname(file.name);
       const filename  = uuid.v4().replace(/\-/g, "").replace(/0/g, "1");
 
-      return `images/${filename}${extension}`;
+      return `NooraHealthContent/Image/${filename}${extension}`;
     }
   });
 }
 
 export function imageURL(filename) {
-  return `https://${bucket}.s3-${region}.amazonaws.com/images/${filename}`;
+  return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Image/${filename}`;
 }
