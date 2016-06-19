@@ -5,7 +5,7 @@ import path from 'path';
 
 import { Progress } from '../semantic-ui/progress';
 
-import '../../../uploads/image';
+import { imageURL } from '../../../uploads/image';
 
 export const LessonForm = React.createClass({
   propTypes: {
@@ -24,6 +24,26 @@ export const LessonForm = React.createClass({
       return false;
     }
   },
+  renderImage(url, label) {
+    if (url) {
+      return (
+        <div style={ {flexBasis: '50%', textAlign: 'center'} }>
+          { label }
+          <img src={ url } className="ui fluid image" />
+        </div>
+      );
+    } else {
+      return false;
+    }
+  },
+  renderImagePreview() {
+    return (
+      <div style={ {display: 'flex', justifyContent: 'center'} }>
+        { this.renderImage(imageURL(this.state.lesson.image), 'Existing image:') }
+        { this.renderImage(this.state.previewURL, 'New image:') }
+      </div>
+    );
+  },
   render() {
     return (
       <form className="ui form">
@@ -34,9 +54,10 @@ export const LessonForm = React.createClass({
 
         <div className="field">
           <label>Image</label>
-          <input type="file" ref={ c => this._image = c } />
+          <input type="file" ref={ c => this._image = c } onChange={ this.onImageChange } />
         </div>
 
+        { this.renderImagePreview() }
         { this.renderProgressBar() }
 
         <button className="ui primary button" onClick={ this.onSubmit }>Save</button>
@@ -46,6 +67,12 @@ export const LessonForm = React.createClass({
   onTitleChange(event) {
     const lesson = this.state.lesson.set('title', event.target.value);
     this.setState({lesson});
+  },
+  onImageChange(event) {
+    if (window.URL && event.target.files.length > 0) {
+      const previewURL = window.URL.createObjectURL(event.target.files[0]);
+      this.setState({previewURL});
+    }
   },
   onSubmit(event) {
     event.preventDefault();
