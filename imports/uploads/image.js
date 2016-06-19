@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Slingshot } from 'meteor/edgee:slingshot';
 import path from 'path';
+import uuid from 'node-uuid';
 
 Slingshot.fileRestrictions("imageUploads", {
   allowedFileTypes: ["image/jpeg", "image/png"],
@@ -17,14 +18,9 @@ if (Meteor.isServer) {
     },
     key(file) {
       const extension = path.extname(file.name);
-      const alphabets = "abcdefghijklmnopqrstuvwxyz";
-      let output = "";
+      const filename  = uuid.v4().replace(/\-/g, "");
 
-      for (var i = 0; i < 5; i++) {
-        output += alphabets[(Math.random() * 26) | 0];
-      }
-
-      return `${output}${extension}`;
+      return `${filename}${extension}`;
     }
   });
 }
