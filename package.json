@@ -2,7 +2,7 @@
   "name": "curriculum_builder",
   "private": true,
   "scripts": {
-    "start": "meteor run"
+    "start": "meteor --settings settings.json"
   },
   "dependencies": {
     "immutable": "^3.8.1",
