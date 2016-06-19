@@ -7,8 +7,6 @@ import { Progress } from '../semantic-ui/progress';
 
 import '../../../uploads/image';
 
-const ImageUploader = new Slingshot.Upload('imageUploads');
-
 export const LessonForm = React.createClass({
   propTypes: {
     lesson: React.PropTypes.object,
@@ -53,6 +51,8 @@ export const LessonForm = React.createClass({
     event.preventDefault();
 
     const image = this._image.files[0]; // TODO validation
+
+    const ImageUploader = new Slingshot.Upload('imageUploads');
 
     ImageUploader.send(image, (error, url) => {
       if (error) {
