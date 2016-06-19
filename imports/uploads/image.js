@@ -20,7 +20,7 @@ if (Meteor.isServer) {
       const extension = path.extname(file.name);
       const filename  = uuid.v4().replace(/\-/g, "").replace(/0/g, "1");
 
-      return `${filename}${extension}`;
+      return `images/${filename}${extension}`;
     }
   });
 }
