@@ -17,7 +17,6 @@ const LessonsListItem = React.createClass({
   },
   render() {
     // TODO move these style to CSS
-
     const containerStyle = {
       display: 'flex'
     };
@@ -26,11 +25,13 @@ const LessonsListItem = React.createClass({
       flexGrow: 1
     };
 
+    const url = imageURL(this.props.lesson.image);
+
     return (
       <div className="item" style={ containerStyle }>
-        <div className="ui small image">
-          <img src={ imageURL(this.props.lesson.image) } />
-        </div>
+        <a href={ url } className="ui small image" target="_blank">
+          <img src={ url } />
+        </a>
 
         <div style={ contentStyle }>
           <div className="header">{ this.props.lesson.title }</div>
