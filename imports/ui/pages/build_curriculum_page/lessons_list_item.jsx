@@ -34,7 +34,9 @@ const LessonsListItem = React.createClass({
         </a>
 
         <div style={ contentStyle }>
-          <div className="header">{ this.props.lesson.title }</div>
+          <div className="header">
+            <a href={ `/lessons/${this.props.lesson._id}` }>{ this.props.lesson.title }</a>
+          </div>
           { this.renderEditButton() }
         </div>
       </div>
