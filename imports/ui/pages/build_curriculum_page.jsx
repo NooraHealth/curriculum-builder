@@ -170,7 +170,7 @@ const BuildCurriculumPage = React.createClass({
 });
 
 const BuildCurriculumPageContainer = createContainer(({ _id }) => {
-  const curriculumsHandle = Meteor.subscribe('curriculums', _id);
+  const curriculumsHandle = Meteor.subscribe('curriculum', _id);
   const lessonsHandle = Meteor.subscribe('lessons.all');
 
   const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
