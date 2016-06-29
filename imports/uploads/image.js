@@ -20,7 +20,7 @@ if (Meteor.isServer) {
     },
     key(file) {
       const extension = path.extname(file.name);
-      const filename  = uuid.v4().replace(/\-/g, "").replace(/0/g, "1");
+      const filename  = uuid.v4().replace(/\-/g, "");
 
       return `NooraHealthContent/Image/${filename}${extension}`;
     }
