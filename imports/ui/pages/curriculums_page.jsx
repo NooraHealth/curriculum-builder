@@ -9,7 +9,7 @@ function CurriculumsPage({ curriculums }) {
   const content = curriculums.map(({_id, title}) => {
     return (
       <li key={ _id }>
-        <a href={ `/${_id}` }>{ title }</a>
+        <a href={ `/curriculums/${_id}` }>{ title }</a>
       </li>
     );
   });
