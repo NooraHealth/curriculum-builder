@@ -20,5 +20,10 @@ Meteor.methods({
       image: lesson.image,
       modules: lesson.modules
     }});
+  },
+  'lessons.addModule'(_id, module_id) {
+    return Lessons.update({ _id }, {
+      $addToSet: { modules: module_id }
+    });
   }
 });
