@@ -27,6 +27,6 @@ if (Meteor.isServer) {
   });
 }
 
-export function audioURL(filename) {
+export function videoURL(filename) {
   return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Video/${filename}`;
 }
