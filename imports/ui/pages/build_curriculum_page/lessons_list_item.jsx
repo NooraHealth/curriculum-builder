@@ -5,6 +5,7 @@ import { imageURL } from '../../../uploads/image';
 const LessonsListItem = React.createClass({
   propTypes: {
     // Perhaps change this to an actual Lesson model or something?
+    curriculum: React.PropTypes.object.isRequired,
     lesson: React.PropTypes.object.isRequired,
     edit: React.PropTypes.func
   },
@@ -35,7 +36,9 @@ const LessonsListItem = React.createClass({
 
         <div style={ contentStyle }>
           <div className="header">
-            <a href={ `/lessons/${this.props.lesson._id}` }>{ this.props.lesson.title }</a>
+            <a href={ `/curriculums/${this.props.curriculum._id}/lessons/${this.props.lesson._id}` }>
+              { this.props.lesson.title }
+            </a>
           </div>
           { this.renderEditButton() }
         </div>

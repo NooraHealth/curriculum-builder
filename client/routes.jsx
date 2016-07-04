@@ -37,10 +37,11 @@ FlowRouter.route('/curriculums/:id', {
   }
 });
 
-FlowRouter.route('/lessons/:id', {
-  action({ id }) {
+FlowRouter.route('/curriculums/:curriculum_id/lessons/:lesson_id', {
+  action({ curriculum_id, lesson_id }) {
     mount(Layout, {
-      content: <LessonPageContainer _id={ id } />
+      content: <LessonPageContainer curriculum_id={ curriculum_id}
+                                    lesson_id={ lesson_id } />
     });
   }
 });

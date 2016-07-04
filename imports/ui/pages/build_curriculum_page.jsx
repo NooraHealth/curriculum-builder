@@ -83,7 +83,7 @@ const BuildCurriculumPage = React.createClass({
     if (this.props.lessons.length > 0) {
       return (
         <div className="ui list">
-          { this.props.lessons.map(lesson => <LessonsListItem lesson={ lesson } key={ lesson._id } edit={ this.editLesson.bind(this, lesson) } />) }
+          { this.props.lessons.map(lesson => <LessonsListItem curriculum={ this.props.curriculum } lesson={ lesson } key={ lesson._id } edit={ this.editLesson.bind(this, lesson) } />) }
         </div>
       );
     } else {

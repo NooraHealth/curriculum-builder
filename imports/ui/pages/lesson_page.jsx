@@ -3,7 +3,7 @@ import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 
-import { Lessons, Modules } from 'meteor/noorahealth:mongo-schemas';
+import { Curriculums, Lessons, Modules } from 'meteor/noorahealth:mongo-schemas';
 
 import Immutable from 'immutable';
 
@@ -22,6 +22,18 @@ const LessonPage = React.createClass({
       modules: Immutable.List(),
       showNewModuleForm: false
     };
+  },
+  renderMenu() {
+    return (
+      <div className="ui text menu">
+        <div className="item">
+          <a href={ `/curriculums/${ this.props.curriculum._id }` }>
+            <i className="chevron left icon"></i>
+            Back to { this.props.curriculum.title }
+          </a>
+        </div>
+      </div>
+    );
   },
   renderLessonInfo() {
     return (
@@ -69,6 +81,8 @@ const LessonPage = React.createClass({
   render() {
     return (
       <div>
+        { this.renderMenu() }
+
         { this.renderLessonInfo() }
 
         <div className="ui divider" />
@@ -105,13 +119,16 @@ const LessonPage = React.createClass({
   }
 });
 
-const LessonPageContainer = createContainer(({ _id }) => {
-  const lessonsHandle = Meteor.subscribe('lesson', _id);
+const LessonPageContainer = createContainer(({ curriculum_id, lesson_id }) => {
+  const curriculumsHandle = Meteor.subscribe('curriculum', curriculum_id);
+  const lessonsHandle = Meteor.subscribe('lesson', lesson_id);
   const modulesHandle = Meteor.subscribe('modules.all');
 
-  const loading = !lessonsHandle.ready() || !modulesHandle.ready();
+  const loading = !curriculumsHandle.ready() || !lessonsHandle.ready() || !modulesHandle.ready();
 
-  const lesson = Lessons.findOne({ _id });
+  const curriculum = Curriculums.findOne({ _id: curriculum_id });
+
+  const lesson = Lessons.findOne({ _id: lesson_id });
 
   const module_ids = (lesson ? lesson.modules : []);
 
@@ -119,11 +136,12 @@ const LessonPageContainer = createContainer(({ _id }) => {
 
   return {
     loading,
+    curriculum,
     lesson,
     modules
   };
-}, ({ loading, lesson, modules }) => {
-  return loading ? <div>Loading...</div> : <LessonPage lesson={ lesson } modules={ modules } />;
+}, ({ loading, curriculum, lesson, modules }) => {
+  return loading ? <div>Loading...</div> : <LessonPage curriculum={ curriculum } lesson={ lesson } modules={ modules } />;
 });
 
 export default LessonPageContainer;
