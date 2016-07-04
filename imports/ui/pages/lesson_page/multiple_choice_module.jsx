@@ -1,0 +1,50 @@
+import React from 'react';
+
+import { audioURL } from '../../../uploads/audio';
+import { imageURL } from '../../../uploads/image';
+
+export function MultipleChoiceModule({module}) {
+  const isCorrectAnswer = i => {
+    const { options, correct_answer: correctAnswers } = module;
+
+    return correctAnswers.indexOf(options[i]) !== -1;
+  };
+
+  const renderImages = () => {
+    return [0, 1, 2, 3, 4, 5].map(i => {
+      const style = isCorrectAnswer(i) ? { border: '5px solid #2C662D' } : {};
+      return (
+        <div key={ i } className="column">
+          <img className="ui fluid image"
+               src={ imageURL(module.options[i]) }
+               style={ style } />
+        </div>
+      );
+    });
+  };
+
+  return (
+    <div className="content">
+      <div className="ui relaxed list">
+        <div className="item">
+          <div className="header">Options</div>
+
+          <div className="ui stackable six column grid">
+            { renderImages() }
+          </div>
+
+        </div>
+
+        <div className="item">
+          <div className="header">Correct Audio</div>
+          <audio src={ audioURL(module.correct_audio) } controls="true" />
+        </div>
+
+        <div className="item">
+          <div className="header">Audio</div>
+          <audio src={ audioURL(module.audio) } controls="true" />
+        </div>
+      </div>
+    </div>
+  );
+}
