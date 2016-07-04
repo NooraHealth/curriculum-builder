@@ -78,7 +78,11 @@ export const LessonForm = React.createClass({
   onSubmit(event) {
     event.preventDefault();
 
-    const image = this._image.files[0]; // TODO validation
+    if (this._image.files.length === 0) {
+      return this.props.onSubmit(this.state.lesson);
+    }
+
+    const image = this._image.files[0];
 
     const ImageUploader = new Slingshot.Upload('imageUploads');
 
