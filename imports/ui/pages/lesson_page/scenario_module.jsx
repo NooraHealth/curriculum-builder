@@ -4,6 +4,12 @@ import { audioURL } from '../../../uploads/audio';
 import { imageURL } from '../../../uploads/image';
 
 export function ScenarioModule({module}) {
+  const humanFriendlyAnswers = {
+    CallDoc: 'Call Doctor',
+    Call911: 'Call 911',
+    Normal: 'Normal'
+  };
+
   return (
     <div className="content">
       <div className="ui list">
@@ -19,7 +25,7 @@ export function ScenarioModule({module}) {
 
         <div className="item">
           <div className="header">Correct Answer</div>
-          { module.correct_answer[0] }
+          { humanFriendlyAnswers[module.correct_answer[0]] }
         </div>
 
         <div className="item">
