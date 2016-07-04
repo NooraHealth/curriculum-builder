@@ -13,7 +13,16 @@ function CurriculumsPage({ curriculums }) {
       </li>
     );
   });
-  return <ul>{ content }</ul>;
+
+  return (
+    <ul>
+      <li>
+        <a href="/curriculums/new">New Curriculum</a>
+      </li>
+
+      { content }
+    </ul>
+  );
 }
 
 const CurriculumsPageContainer = createContainer(() => {
