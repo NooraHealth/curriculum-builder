@@ -26,6 +26,12 @@ const LessonPage = React.createClass({
       showNewModuleForm: false
     };
   },
+  componentDidMount() {
+    window.addEventListener('beforeunload', this.beforeWindowUnload);
+  },
+  componentWillUnmount() {
+    window.removeEventListener('beforeunload', this.beforeWindowUnload);
+  },
   renderMenu() {
     return (
       <div className="ui text menu">
@@ -116,13 +122,13 @@ const LessonPage = React.createClass({
       } else {
         const modules = this.state.modules.push(module.set('_id', results.insertedId));
 
-        Meteor.call('curriculums.touch', this.props.curriculum._id);
-        Meteor.call('lessons.setModules', this.props.lesson._id, modules.map(x => x._id).toJS());
-
         this.setState({
           modules: modules,
           showNewModuleForm: false
         });
+
+        Meteor.call('curriculums.touch', this.props.curriculum._id);
+        this.persistModulesOrder();
       }
     });
   },
@@ -157,7 +163,40 @@ const LessonPage = React.createClass({
   onChangeOrder(order) {
     const modules = Immutable.List(order).map(_id => this.state.modules.find(x => x._id === _id));
 
-    this.setState({modules});
+    let { changeOrderDebounceToken } = this.state;
+
+    if (changeOrderDebounceToken) {
+      clearTimeout(changeOrderDebounceToken);
+    }
+
+    changeOrderDebounceToken = setTimeout(this.persistModulesOrder, 10000);
+
+    this.setState({
+      modules,
+      changeOrderDebounceToken
+    });
+  },
+  persistModulesOrder() {
+    const { changeOrderDebounceToken } = this.state;
+
+    if (changeOrderDebounceToken) {
+      clearTimeout(changeOrderDebounceToken);
+      this.setState({
+        changeOrderDebounceToken: undefined
+      });
+    }
+
+    Meteor.call('lessons.setModules', this.props.lesson._id, this.state.modules.map(x => x._id).toJS());
+  },
+  beforeWindowUnload(event) {
+    if (this.state.changeOrderDebounceToken) {
+      const message = "Please wait while unsaved changes are saved.";
+
+      this.persistModulesOrder();
+      event.returnValue = message;
+
+      return message;
+    }
   }
 });
 
@@ -174,7 +213,10 @@ const LessonPageContainer = createContainer(({ curriculum_id, lesson_id }) => {
 
   const module_ids = (lesson ? lesson.modules : []);
 
-  const modules = Modules.find({ _id: { $in: module_ids }}).fetch().map(m => new Module(m));
+  const modules = Modules.find({ _id: { $in: module_ids }})
+                         .fetch()
+                         .map(m => new Module(m))
+                         .sort((a, b) => module_ids.indexOf(a._id) - module_ids.indexOf(b._id));
 
   return {
     loading,
