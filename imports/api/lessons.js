@@ -25,5 +25,12 @@ Meteor.methods({
     return Lessons.update({ _id }, {
       $addToSet: { modules: module_id }
     });
+  },
+  'lessons.setModules'(_id, module_ids) {
+    return Lessons.update({ _id }, {
+      $set: {
+        modules: module_ids
+      }
+    });
   }
 });

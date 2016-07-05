@@ -86,7 +86,7 @@ export const ModulesListItem = React.createClass({
   },
   render() {
     return (
-      <div className="ui segment">
+      <div className="ui segment" data-id={ this.props.module._id }>
         { this.renderHeader() }
         { this.renderContent() }
       </div>

@@ -7,6 +7,8 @@ import { Curriculums, Lessons, Modules } from 'meteor/noorahealth:mongo-schemas'
 
 import Immutable from 'immutable';
 
+import Sortable from 'react-sortablejs';
+
 import { ModuleForm } from '../components/forms/module_form';
 
 import { ModulesListItem } from './lesson_page/modules_list_item';
@@ -20,7 +22,7 @@ import { imageURL } from '../../uploads/image';
 const LessonPage = React.createClass({
   getInitialState() {
     return {
-      modules: Immutable.List(),
+      modules: Immutable.List(this.props.modules),
       showNewModuleForm: false
     };
   },
@@ -55,8 +57,20 @@ const LessonPage = React.createClass({
     );
   },
   renderModules() {
-    if (this.props.modules.length > 0) {
-      return this.props.modules.map(m => <ModulesListItem key={ m._id } onSave={ this.saveModule } module={ m } />);
+    if (this.state.modules.size > 0) {
+      const items = this.state.modules.map(m => {
+        return (
+          <ModulesListItem key={ m._id }
+                           onSave={ this.saveModule }
+                           module={ m } />
+        );
+      });
+
+      return (
+        <Sortable onChange={ this.onChangeOrder }>
+          { items }
+        </Sortable>
+      );
     } else {
       return false;
     }
@@ -100,11 +114,15 @@ const LessonPage = React.createClass({
       if (error) {
         console.error(error);
       } else {
-        if ("insertedId" in results) {
-          Meteor.call('curriculums.touch', this.props.curriculum._id);
-          Meteor.call('lessons.addModule', this.props.lesson._id, results.insertedId);
-        }
-        this.hideNewModuleForm();
+        const modules = this.state.modules.push(module.set('_id', results.insertedId));
+
+        Meteor.call('curriculums.touch', this.props.curriculum._id);
+        Meteor.call('lessons.setModules', this.props.lesson._id, modules.map(x => x._id).toJS());
+
+        this.setState({
+          modules: modules,
+          showNewModuleForm: false
+        });
       }
     });
   },
@@ -113,10 +131,14 @@ const LessonPage = React.createClass({
       if (error) {
         console.error(error);
       } else {
-        if ("insertedId" in results) {
-          Meteor.call('curriculums.touch', this.props.curriculum._id);
-          Meteor.call('lessons.addModule', this.props.lesson._id, results.insertedId);
-        }
+        Meteor.call('curriculums.touch', this.props.curriculum._id);
+
+        let { modules } = this.state;
+        const index = modules.findIndex(x => x._id === module._id);
+        modules = modules.set(index, module);
+        this.setState({
+          modules
+        });
       }
     });
   },
@@ -131,6 +153,11 @@ const LessonPage = React.createClass({
     this.setState({
       showNewModuleForm: false
     });
+  },
+  onChangeOrder(order) {
+    const modules = Immutable.List(order).map(_id => this.state.modules.find(x => x._id === _id));
+
+    this.setState({modules});
   }
 });
 
