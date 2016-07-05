@@ -65,7 +65,7 @@ const LessonPage = React.createClass({
     if (this.state.showNewModuleForm) {
       return (
         <div className="ui segment">
-          <ModuleForm onSave={ this.saveModule }
+          <ModuleForm onSave={ this.createModule }
                       onCancel={ this.hideNewModuleForm }
                       module={ new Module() } />
         </div>
@@ -95,6 +95,19 @@ const LessonPage = React.createClass({
     );
   },
 
+  createModule(module) {
+    Meteor.call('modules.upsert', module.toJS(), (error, results) => {
+      if (error) {
+        console.error(error);
+      } else {
+        if ("insertedId" in results) {
+          Meteor.call('curriculums.touch', this.props.curriculum._id);
+          Meteor.call('lessons.addModule', this.props.lesson._id, results.insertedId);
+        }
+        this.hideNewModuleForm();
+      }
+    });
+  },
   saveModule(module) {
     Meteor.call('modules.upsert', module.toJS(), (error, results) => {
       if (error) {
