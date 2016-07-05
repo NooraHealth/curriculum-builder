@@ -21,6 +21,10 @@ export { Module };
 
 Meteor.methods({
   'modules.upsert'(module) {
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('Modules.methods.upsert.not-logged-in', 'Must be logged in to update modules.');
+    }
+
     return Modules.upsert(module._id, {'$set': {
       type: module.type,
       title: module.title,

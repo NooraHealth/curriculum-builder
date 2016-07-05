@@ -23,3 +23,6 @@ semantic:ui
 flemay:less-autoprefixer
 react-meteor-data
 edgee:slingshot
+useraccounts:semantic-ui
+accounts-password
+gadicc:blaze-react-component
