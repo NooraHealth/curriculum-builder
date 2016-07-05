@@ -6,8 +6,11 @@
  * Uploads files and saves documents to the MongoDB
  *****/
 import React from 'react';
+import Immutable from 'immutable'
 
 import { createContainer } from 'meteor/react-meteor-data';
+
+import Sortable from 'react-sortablejs';
 
 import { Modal } from '../components/semantic-ui/modal';
 
@@ -35,7 +38,8 @@ const BuildCurriculumPage = React.createClass({
   },
   getInitialState() {
     return {
-      showLessonFormModal: false
+      showLessonFormModal: false,
+      lessons: Immutable.List(this.props.lessons)
     };
   },
   renderCurriculumForm() {
@@ -80,10 +84,21 @@ const BuildCurriculumPage = React.createClass({
     }
   },
   renderLessons() {
-    if (this.props.lessons.length > 0) {
+    if (this.state.lessons.size > 0) {
       return (
         <div className="ui list">
-          { this.props.lessons.map(lesson => <LessonsListItem curriculum={ this.props.curriculum } lesson={ lesson } key={ lesson._id } edit={ this.editLesson.bind(this, lesson) } />) }
+          <Sortable onChange={ this.onChangeOrder }>
+            {
+              this.state.lessons.map(lesson => {
+                return (
+                  <LessonsListItem curriculum={ this.props.curriculum }
+                                   lesson={ lesson }
+                                   key={ lesson._id }
+                                   edit={ this.editLesson.bind(this, lesson) } />
+                );
+              })
+            }
+          </Sortable>
         </div>
       );
     } else {
@@ -127,7 +142,7 @@ const BuildCurriculumPage = React.createClass({
       title: this._title.value,
       condition: this._condition.value,
       language: this._language.value,
-      lessons: this.props.lessons.map(lesson => lesson._id)
+      lessons: this.state.lessons.map(lesson => lesson._id)
     }, (error, results) => {
       if (error) {
         console.error(error);
@@ -151,15 +166,21 @@ const BuildCurriculumPage = React.createClass({
       if (error) {
         console.error(error);
       } else {
+        let { lessons } = this.state;
+
         if ("insertedId" in results) {
-          Meteor.call('curriculums.addLesson', this.props.curriculum._id, results.insertedId);
+          lessons = lessons.push(lesson.set('_id', results.insertedId));
+        } else {
+          const index = lessons.findIndex(x => x._id === lesson._id);
+          lessons = lessons.set(index, lesson);
         }
 
-        Meteor.call('curriculums.touch', this.props.curriculum._id);
-
         this.setState({
+          lessons,
           showLessonFormModal: false
         });
+
+        this.persistLessonsOrder();
       }
     });
   },
@@ -168,6 +189,19 @@ const BuildCurriculumPage = React.createClass({
       editingLesson: undefined,
       showLessonFormModal: false
     });
+  },
+  onChangeOrder(order) {
+    const lessons = this.state.lessons.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+
+    this.setState({
+      lessons
+    });
+
+    this.persistLessonsOrder();
+  },
+  persistLessonsOrder() {
+    Meteor.call('curriculums.setLessons', this.props.curriculum._id, this.state.lessons.map(x => x._id).toJS());
+    Meteor.call('curriculums.touch', this.props.curriculum._id);
   }
 });
 
@@ -180,7 +214,9 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
 
   const lesson_ids = curriculum ? curriculum.lessons : [];
 
-  const lessons = Lessons.find({ _id: { $in: lesson_ids }}).fetch();
+  const lessons = Lessons.find({ _id: { $in: lesson_ids }})
+                         .fetch()
+                         .sort((a, b) => lesson_ids.indexOf(a._id) - lesson_ids.indexOf(b._id));
 
   return {
     loading,

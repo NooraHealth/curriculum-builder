@@ -24,6 +24,13 @@ Meteor.methods({
       last_updated: new Date()
     }});
   },
+  'curriculums.setLessons'(_id, lesson_ids) {
+    return Curriculums.update({ _id }, {
+      $set: {
+        lessons: lesson_ids
+      }
+    });
+  },
   'curriculums.addLesson'(_id, lesson_id) {
     return Curriculums.update({ _id }, {
       $addToSet: { lessons: lesson_id }

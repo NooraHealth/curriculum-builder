@@ -29,7 +29,9 @@ const LessonsListItem = React.createClass({
     const url = imageURL(this.props.lesson.image);
 
     return (
-      <div className="item" style={ containerStyle }>
+      <div className="item"
+           style={ containerStyle }
+           data-id={ this.props.lesson._id }>
         <a href={ url } className="ui small image" target="_blank">
           <img src={ url } />
         </a>
