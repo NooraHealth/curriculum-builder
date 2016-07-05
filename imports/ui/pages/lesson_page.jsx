@@ -55,13 +55,6 @@ const LessonPage = React.createClass({
       </h2>
     );
   },
-  renderModule(module) {
-    return (
-      <div className="ui segment" key={ module._id }>
-        <ModulesListItem onSave={ this.saveModule } module={ module } />
-      </div>
-    );
-  },
   renderModules() {
     if (this.state.modules.size > 0) {
       const items = this.state.modules.map(m => {
