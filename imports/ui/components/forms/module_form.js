@@ -147,7 +147,9 @@ export const ModuleForm = React.createClass({
     return (
       <div className="field">
         <label>Correct Answer</label>
-        <select className="ui fluid dropdown" ref={ c => this.correct_answer = c }>
+        <select className="ui fluid dropdown"
+                defaultValue={ this.props.module.correct_answer && this.props.module.correct_answer[0] }
+                ref={ c => this.correct_answer = c }>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
         </select>
@@ -158,7 +160,9 @@ export const ModuleForm = React.createClass({
     return (
       <div className="field">
         <label>Correct Answer</label>
-        <select className="ui fluid dropdown" ref={ c => this.correct_answer = c }>
+        <select className="ui fluid dropdown"
+                defaultValue={ this.props.module.correct_answer && this.props.module.correct_answer[0] }
+                ref={ c => this.correct_answer = c }>
           <option value="Normal">Normal</option>
           <option value="CallDoc">Call Doctor</option>
           <option value="Call911">Call 911</option>
