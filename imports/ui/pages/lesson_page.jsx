@@ -11,6 +11,7 @@ import { ModuleForm } from '../components/forms/module_form';
 
 import { ModulesListItem } from './lesson_page/modules_list_item';
 
+import '../../api/curriculums';
 import { Module } from '../../api/modules';
 import '../../api/lessons';
 
@@ -100,6 +101,7 @@ const LessonPage = React.createClass({
         console.error(error);
       } else {
         if ("insertedId" in results) {
+          Meteor.call('curriculums.touch', this.props.curriculum._id);
           Meteor.call('lessons.addModule', this.props.lesson._id, results.insertedId);
         }
       }

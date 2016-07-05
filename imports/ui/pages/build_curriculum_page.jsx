@@ -155,6 +155,8 @@ const BuildCurriculumPage = React.createClass({
           Meteor.call('curriculums.addLesson', this.props.curriculum._id, results.insertedId);
         }
 
+        Meteor.call('curriculums.touch', this.props.curriculum._id);
+
         this.setState({
           showLessonFormModal: false
         });
