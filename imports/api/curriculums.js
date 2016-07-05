@@ -31,11 +31,6 @@ Meteor.methods({
       }
     });
   },
-  'curriculums.addLesson'(_id, lesson_id) {
-    return Curriculums.update({ _id }, {
-      $addToSet: { lessons: lesson_id }
-    });
-  },
   'curriculums.touch'(_id) {
     return Curriculums.update({ _id }, {
       $set: {
