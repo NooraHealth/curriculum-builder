@@ -20,7 +20,8 @@ Meteor.methods({
       title: curriculum.title,
       condition: curriculum.condition,
       language: curriculum.language,
-      lessons: curriculum.lessons
+      lessons: curriculum.lessons,
+      last_updated: new Date()
     }});
   },
   'curriculums.addLesson'(_id, lesson_id) {
