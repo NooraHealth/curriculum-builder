@@ -21,11 +21,6 @@ Meteor.methods({
       modules: lesson.modules
     }});
   },
-  'lessons.addModule'(_id, module_id) {
-    return Lessons.update({ _id }, {
-      $addToSet: { modules: module_id }
-    });
-  },
   'lessons.setModules'(_id, module_ids) {
     return Lessons.update({ _id }, {
       $set: {
