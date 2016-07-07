@@ -87,7 +87,7 @@ const BuildCurriculumPage = React.createClass({
     if (this.state.lessons.size > 0) {
       return (
         <div className="ui list">
-          <Sortable onChange={ this.onChangeOrder }>
+          <Sortable onChange={ this.onChangeOrder } options={ {handle: ".grabber"} }>
             {
               this.state.lessons.map(lesson => {
                 return (

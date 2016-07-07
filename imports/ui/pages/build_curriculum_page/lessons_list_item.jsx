@@ -32,6 +32,8 @@ const LessonsListItem = React.createClass({
       <div className="item"
            style={ containerStyle }
            data-id={ this.props.lesson._id }>
+        <i className="grabber move icon" />
+
         <a href={ url } className="ui small image" target="_blank">
           <img src={ url } />
         </a>
