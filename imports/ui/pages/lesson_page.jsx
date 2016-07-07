@@ -66,7 +66,7 @@ const LessonPage = React.createClass({
       });
 
       return (
-        <Sortable onChange={ this.onChangeOrder }>
+        <Sortable onChange={ this.onChangeOrder } options={ {handle: ".grabber"} }>
           { items }
         </Sortable>
       );

@@ -1,1 +1,13 @@
 /* CSS declarations go here */
+
+.grabber {
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  cursor: grab;
+}
+
+.sortable-chosen .grabber {
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+}

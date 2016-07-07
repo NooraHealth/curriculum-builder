@@ -44,6 +44,7 @@ export const ModulesListItem = React.createClass({
 
     return (
       <div className="title" onClick={ this.toggleExpand } style={ {cursor: 'pointer'} }>
+        <i className="grabber move icon" />
         <b>{ type }</b> - { title }
       </div>
     );
