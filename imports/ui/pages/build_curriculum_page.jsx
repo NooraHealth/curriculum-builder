@@ -159,7 +159,7 @@ const BuildCurriculumPage = React.createClass({
       title: this._title.value,
       condition: this._condition.value,
       language: this._language.value,
-      lessons: this.state.lessons.map(lesson => lesson._id)
+      lessons: this.state.lessons.map(lesson => lesson._id).toJS()
     }, (error, results) => {
       if (error) {
         console.error(error);
