@@ -94,7 +94,8 @@ const BuildCurriculumPage = React.createClass({
                   <LessonsListItem curriculum={ this.props.curriculum }
                                    lesson={ lesson }
                                    key={ lesson._id }
-                                   edit={ this.editLesson.bind(this, lesson) } />
+                                   edit={ this.editLesson.bind(this, lesson) }
+                                   onRemove={ this.removeLesson }/>
                 );
               })
             }
@@ -159,6 +160,20 @@ const BuildCurriculumPage = React.createClass({
     this.setState({
       showLessonFormModal: true,
       editingLesson: new Lesson(lesson)
+    });
+  },
+  removeLesson(lesson) {
+    Meteor.call('lessons.remove', lesson._id, (error, result) => {
+      if (error) {
+        console.error(error);
+      } else {
+        let { lessons } = this.state;
+        const index = lessons.findIndex(x => x._id === lesson._id);
+        lessons = lessons.delete(index);
+        this.setState({
+          lessons
+        });
+      }
     });
   },
   saveLesson(lesson) {

@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 
 import Immutable from 'immutable';
 
-import { Lessons } from 'meteor/noorahealth:mongo-schemas';
+import { Lessons, Modules } from 'meteor/noorahealth:mongo-schemas';
 
 const Lesson = Immutable.Record({
   _id: '',
@@ -33,6 +33,20 @@ Meteor.methods({
     return Lessons.update({ _id }, {
       $set: {
         modules: module_ids
+      }
+    });
+  },
+  'lessons.remove'(_id) {
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('Lessons.methods.remove.not-logged-in', 'Must be logged in to update lessons.');
+    }
+
+    const lesson = Lessons.findOne({ _id });
+
+    Lessons.remove({ _id });
+    Modules.remove({
+      _id: {
+        $in: lesson.modules
       }
     });
   }
