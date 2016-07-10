@@ -42,6 +42,18 @@ const BuildCurriculumPage = React.createClass({
       lessons: Immutable.List(this.props.lessons)
     };
   },
+  renderMenu() {
+    return (
+      <div className="ui text menu">
+        <div className="item">
+          <a href="/curriculums">
+            <i className="chevron left icon" />
+            Back to curriculums list
+          </a>
+        </div>
+      </div>
+    );
+  },
   renderCurriculumForm() {
     const { title, condition, language } = this.props.curriculum;
 
@@ -123,15 +135,19 @@ const BuildCurriculumPage = React.createClass({
   },
   render() {
     return (
-      <div className="ui segments">
-        { this.renderNags() }
-        { this.renderLessonFormModal() }
+      <div>
+        { this.renderMenu() }
 
-        <div className="ui segment">
-          { this.renderCurriculumForm() }
+        <div className="ui segments">
+          { this.renderNags() }
+          { this.renderLessonFormModal() }
+
+          <div className="ui segment">
+            { this.renderCurriculumForm() }
+          </div>
+
+          { this.renderLessonsSegment() }
         </div>
-
-        { this.renderLessonsSegment() }
       </div>
     );
   },
