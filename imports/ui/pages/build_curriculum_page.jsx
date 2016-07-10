@@ -12,8 +12,6 @@ import { createContainer } from 'meteor/react-meteor-data';
 
 import Sortable from 'react-sortablejs';
 
-import { Modal } from '../components/semantic-ui/modal';
-
 import { LessonForm } from '../components/forms/lesson_form';
 import { LessonsListItem } from './build_curriculum_page/lessons_list_item';
 
@@ -31,15 +29,14 @@ const BuildCurriculumPage = React.createClass({
   mixins: [NagsMixin],
   getDefaultProps() {
     return {
-      loading: false,
       curriculum: {},
       lessons: []
     };
   },
   getInitialState() {
     return {
-      showLessonFormModal: false,
-      lessons: Immutable.List(this.props.lessons)
+      lessons: Immutable.List(this.props.lessons),
+      showNewLessonForm: false
     };
   },
   renderMenu() {
@@ -82,19 +79,6 @@ const BuildCurriculumPage = React.createClass({
       </form>
     );
   },
-  renderLessonFormModal() {
-    if (this.state.showLessonFormModal) {
-      return (
-        <Modal onHide={ this.hideLessonFormModal }>
-          <div className="content">
-            <LessonForm lesson={ this.state.editingLesson } onSubmit={ this.saveLesson } />
-          </div>
-        </Modal>
-      );
-    } else {
-      return false;
-    }
-  },
   renderLessons() {
     if (this.state.lessons.size > 0) {
       return (
@@ -125,24 +109,38 @@ const BuildCurriculumPage = React.createClass({
           <div className="ui divider" />
 
           { this.renderLessons() }
-
-          <button className="ui button" onClick={ this.editLesson.bind(this, undefined) }>Add Lesson</button>
         </div>
       );
     } else {
       return false;
     }
   },
+  renderNewLessonForm() {
+    if (this.state.showNewLessonForm) {
+      return (
+        <div className="ui segment">
+          <LessonForm lesson={ new Lesson() } onSubmit={ this.saveLesson } />
+        </div>
+      );
+    } else {
+      return (
+        <button className="ui button" onClick={ this.showNewLessonForm }>
+          Add Lesson
+        </button>
+      );
+    }
+  },
   render() {
     return (
       <div>
         { this.renderNags() }
-        { this.renderLessonFormModal() }
         { this.renderMenu() }
 
         { this.renderCurriculumForm() }
 
         { this.renderLessonsSegment() }
+
+        { this.renderNewLessonForm() }
       </div>
     );
   },
@@ -167,10 +165,11 @@ const BuildCurriculumPage = React.createClass({
       }
     });
   },
-  editLesson(lesson = {}) {
+  showNewLessonForm(event) {
+    event.preventDefault();
+
     this.setState({
-      showLessonFormModal: true,
-      editingLesson: new Lesson(lesson)
+      showNewLessonForm: true
     });
   },
   removeLesson(lesson) {
@@ -192,10 +191,11 @@ const BuildCurriculumPage = React.createClass({
       if (error) {
         console.error(error);
       } else {
-        let { lessons } = this.state;
+        let { lessons, showNewLessonForm } = this.state;
 
         if ("insertedId" in results) {
           lessons = lessons.push(lesson.set('_id', results.insertedId));
+          showNewLessonForm = false;
         } else {
           const index = lessons.findIndex(x => x._id === lesson._id);
           lessons = lessons.set(index, lesson);
@@ -203,17 +203,11 @@ const BuildCurriculumPage = React.createClass({
 
         this.setState({
           lessons,
-          showLessonFormModal: false
+          showNewLessonForm
         });
 
         this.persistLessonsOrder();
       }
-    });
-  },
-  hideLessonFormModal() {
-    this.setState({
-      editingLesson: undefined,
-      showLessonFormModal: false
     });
   },
   onChangeOrder(order) {
