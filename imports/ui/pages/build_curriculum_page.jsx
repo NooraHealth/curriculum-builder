@@ -121,12 +121,12 @@ const BuildCurriculumPage = React.createClass({
   renderLessonsSegment() {
     if (this.props.curriculum._id) {
       return (
-        <div className="ui segment">
-          <button className="ui button" onClick={ this.editLesson.bind(this, undefined) }>Add Lesson</button>
-
-          { this.props.lessons.length > 0 && <div className="ui divider" /> }
+        <div>
+          <div className="ui divider" />
 
           { this.renderLessons() }
+
+          <button className="ui button" onClick={ this.editLesson.bind(this, undefined) }>Add Lesson</button>
         </div>
       );
     } else {
@@ -136,18 +136,13 @@ const BuildCurriculumPage = React.createClass({
   render() {
     return (
       <div>
+        { this.renderNags() }
+        { this.renderLessonFormModal() }
         { this.renderMenu() }
 
-        <div className="ui segments">
-          { this.renderNags() }
-          { this.renderLessonFormModal() }
+        { this.renderCurriculumForm() }
 
-          <div className="ui segment">
-            { this.renderCurriculumForm() }
-          </div>
-
-          { this.renderLessonsSegment() }
-        </div>
+        { this.renderLessonsSegment() }
       </div>
     );
   },

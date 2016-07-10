@@ -39,7 +39,7 @@ const LessonsListItem = React.createClass({
     const url = imageURL(this.props.lesson.image);
 
     return (
-      <div className="item"
+      <div className="ui segment"
            style={ containerStyle }
            data-id={ this.props.lesson._id }>
         <i className="grabber move icon" />
