@@ -126,8 +126,11 @@ const BuildCurriculumPage = React.createClass({
       );
     } else {
       return (
-        <button className="ui button" onClick={ this.showNewLessonForm }>
-          Add Lesson
+        <button className="green ui labeled icon button"
+                onClick={ this.showNewLessonForm }
+                style={ {marginTop: '1rem'} }>
+          <i className="plus icon" />
+          New Lesson
         </button>
       );
     }

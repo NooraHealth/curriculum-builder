@@ -86,8 +86,10 @@ const LessonPage = React.createClass({
       );
     } else {
       return (
-        <button className="ui primary button"
-                onClick={ this.showNewModuleForm }>
+        <button className="green ui labeled icon button"
+                onClick={ this.showNewModuleForm }
+                style={ {marginTop: '1rem'} }>
+          <i className="plus icon" />
           New Module
         </button>
       );
