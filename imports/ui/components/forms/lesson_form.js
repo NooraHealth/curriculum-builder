@@ -15,7 +15,8 @@ export const LessonForm = React.createClass({
   },
   getInitialState() {
     return {
-      lesson: this.props.lesson
+      lesson: this.props.lesson,
+      imagePreview: this.props.lesson.image && imageURL(this.props.lesson.image)
     };
   },
   renderProgressBar() {
@@ -25,28 +26,15 @@ export const LessonForm = React.createClass({
       return false;
     }
   },
-  renderImage(url, label) {
-    if (url) {
-      return (
-        <div style={ {flexBasis: '50%', textAlign: 'center'} }>
-          { label }
-          <img src={ url } className="ui fluid image" />
-        </div>
-      );
-    } else {
-      return false;
-    }
-  },
-  renderImagePreview() {
-    const existingImageURL = this.state.lesson.image && imageURL(this.state.lesson.image);
-    return (
-      <div style={ {display: 'flex', justifyContent: 'center'} }>
-        { this.renderImage(existingImageURL, 'Existing image:') }
-        { this.renderImage(this.state.previewURL, 'New image:') }
-      </div>
-    );
-  },
   render() {
+    const renderImagePreview = () => {
+      if (this.state.imagePreview) {
+        return <img className="ui small image"
+                    src={ this.state.imagePreview }
+                    style={ {display: 'inline', marginRight: '10px'} } />
+      }
+    };
+
     return (
       <form className="ui form">
         <div className="field">
@@ -56,11 +44,11 @@ export const LessonForm = React.createClass({
 
         <div className="field">
           <label>Image</label>
-          <input type="file" ref={ c => this._image = c } onChange={ this.onImageChange } />
+          <div>
+            { renderImagePreview() }
+            <input type="file" ref={ c => this._image = c } onChange={ this.onImageChange } />
+          </div>
         </div>
-
-        { this.renderImagePreview() }
-        { this.renderProgressBar() }
 
         <button className="ui primary button" onClick={ this.onSave }>Save</button>
         <button className="ui button" onClick={ this.props.onCancel }>Cancel</button>
@@ -73,8 +61,8 @@ export const LessonForm = React.createClass({
   },
   onImageChange(event) {
     if (window.URL && event.target.files.length > 0) {
-      const previewURL = window.URL.createObjectURL(event.target.files[0]);
-      this.setState({previewURL});
+      const imagePreview = window.URL.createObjectURL(event.target.files[0]);
+      this.setState({imagePreview});
     }
   },
   onSave(event) {
