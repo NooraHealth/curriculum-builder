@@ -106,7 +106,7 @@ const BuildCurriculumPage = React.createClass({
                   <LessonsListItem curriculum={ this.props.curriculum }
                                    lesson={ lesson }
                                    key={ lesson._id }
-                                   edit={ this.editLesson.bind(this, lesson) }
+                                   onSave={ this.saveLesson }
                                    onRemove={ this.removeLesson }/>
                 );
               })
@@ -242,7 +242,8 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
 
   const lessons = Lessons.find({ _id: { $in: lesson_ids }})
                          .fetch()
-                         .sort((a, b) => lesson_ids.indexOf(a._id) - lesson_ids.indexOf(b._id));
+                         .sort((a, b) => lesson_ids.indexOf(a._id) - lesson_ids.indexOf(b._id))
+                         .map(l => new Lesson(l));
 
   return {
     loading,
