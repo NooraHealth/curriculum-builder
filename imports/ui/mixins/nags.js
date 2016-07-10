@@ -22,6 +22,9 @@ import { Nag } from '../components/semantic-ui/nag';
 // arises, feel free to implement mechanism that allows such customization.
 
 const NagsMixin = {
+  componentWillUnmount() {
+    (this.state.nags || []).forEach(({nagId}) => clearTimeout(nagId));
+  },
   renderNags() {
     return this.__nagsMixin_getNags().map(({message, nagId}) => {
       return <Nag key={ nagId } onDismiss={ this.removeNag.bind(this, nagId) }>{ message }</Nag>;
