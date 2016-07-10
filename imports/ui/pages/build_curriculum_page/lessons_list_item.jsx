@@ -2,8 +2,6 @@ import React from 'react';
 
 import { LessonForm } from '../../components/forms/lesson_form';
 
-import { imageURL } from '../../../uploads/image';
-
 import { Lesson } from '../../../api/lessons';
 
 const LessonsListItem = React.createClass({
@@ -21,22 +19,17 @@ const LessonsListItem = React.createClass({
   },
   renderContent() {
     const containerStyle = {
-      display: 'flex'
+      display: 'flex',
+      alignItems: 'baseline'
     };
 
     const contentStyle = {
       flexGrow: 1
     };
 
-    const url = imageURL(this.props.lesson.image);
-
     return (
       <div style={ containerStyle }>
         <i className="grabber move icon" />
-
-        <a href={ url } className="ui small image" target="_blank">
-          <img src={ url } />
-        </a>
 
         <div style={ contentStyle }>
           <div className="header">
@@ -44,15 +37,16 @@ const LessonsListItem = React.createClass({
               { this.props.lesson.title }
             </a>
           </div>
-
-          <button className="ui button" onClick={ this.onEdit }>
-            Edit
-          </button>
-
-          <button className="negative ui button" onClick={ this.onRemove }>
-            Remove
-          </button>
         </div>
+
+        <button className="ui icon button" onClick={ this.onEdit }>
+          <i className="write icon" />
+        </button>
+
+        <button className="negative ui icon button" onClick={ this.onRemove }>
+          <i className="trash icon" />
+        </button>
+
       </div>
     );
   },
