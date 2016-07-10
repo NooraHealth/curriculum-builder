@@ -10,7 +10,7 @@ import { imageURL } from '../../../uploads/image';
 export const LessonForm = React.createClass({
   propTypes: {
     lesson: React.PropTypes.object,
-    onSubmit: React.PropTypes.func.isRequired
+    onSave: React.PropTypes.func.isRequired
   },
   getInitialState() {
     return {
@@ -61,7 +61,7 @@ export const LessonForm = React.createClass({
         { this.renderImagePreview() }
         { this.renderProgressBar() }
 
-        <button className="ui primary button" onClick={ this.onSubmit }>Save</button>
+        <button className="ui primary button" onClick={ this.onSave }>Save</button>
       </form>
     );
   },
@@ -75,11 +75,11 @@ export const LessonForm = React.createClass({
       this.setState({previewURL});
     }
   },
-  onSubmit(event) {
+  onSave(event) {
     event.preventDefault();
 
     if (this._image.files.length === 0) {
-      return this.props.onSubmit(this.state.lesson);
+      return this.props.onSave(this.state.lesson);
     }
 
     const image = this._image.files[0];
@@ -93,7 +93,7 @@ export const LessonForm = React.createClass({
         const filename = path.basename(url);
         const lesson = this.state.lesson.set('image', filename);
         this.setState({lesson});
-        this.props.onSubmit(lesson);
+        this.props.onSave(lesson);
       }
     });
 

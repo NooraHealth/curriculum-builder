@@ -59,7 +59,7 @@ const LessonsListItem = React.createClass({
   renderForm() {
     return (
       <LessonForm lesson={ this.props.lesson }
-                  onSubmit={ this.onSave }/>
+                  onSave={ this.onSave }/>
     );
   },
   render() {

@@ -119,7 +119,7 @@ const BuildCurriculumPage = React.createClass({
     if (this.state.showNewLessonForm) {
       return (
         <div className="ui segment">
-          <LessonForm lesson={ new Lesson() } onSubmit={ this.saveLesson } />
+          <LessonForm lesson={ new Lesson() } onSave={ this.saveLesson } />
         </div>
       );
     } else {
