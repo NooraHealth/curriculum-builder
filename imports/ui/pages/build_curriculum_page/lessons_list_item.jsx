@@ -59,7 +59,8 @@ const LessonsListItem = React.createClass({
   renderForm() {
     return (
       <LessonForm lesson={ this.props.lesson }
-                  onSave={ this.onSave }/>
+                  onSave={ this.onSave }
+                  onCancel={ this.hideEditForm }/>
     );
   },
   render() {
@@ -88,6 +89,13 @@ const LessonsListItem = React.createClass({
     if (confirm(`Are you sure you want to remove ${this.props.lesson.title}?`)) {
         this.props.onRemove(this.props.lesson);
     }
+  },
+  hideEditForm(event) {
+    event.preventDefault();
+
+    this.setState({
+      edit: false
+    });
   }
 });
 

@@ -119,7 +119,9 @@ const BuildCurriculumPage = React.createClass({
     if (this.state.showNewLessonForm) {
       return (
         <div className="ui segment">
-          <LessonForm lesson={ new Lesson() } onSave={ this.saveLesson } />
+          <LessonForm lesson={ new Lesson() }
+                      onSave={ this.saveLesson }
+                      onCancel={ this.hideNewLessonForm } />
         </div>
       );
     } else {
@@ -170,6 +172,13 @@ const BuildCurriculumPage = React.createClass({
 
     this.setState({
       showNewLessonForm: true
+    });
+  },
+  hideNewLessonForm(event) {
+    event.preventDefault();
+
+    this.setState({
+      showNewLessonForm: false
     });
   },
   removeLesson(lesson) {

@@ -10,7 +10,8 @@ import { imageURL } from '../../../uploads/image';
 export const LessonForm = React.createClass({
   propTypes: {
     lesson: React.PropTypes.object,
-    onSave: React.PropTypes.func.isRequired
+    onSave: React.PropTypes.func.isRequired,
+    onCancel: React.PropTypes.func.isRequired
   },
   getInitialState() {
     return {
@@ -62,6 +63,7 @@ export const LessonForm = React.createClass({
         { this.renderProgressBar() }
 
         <button className="ui primary button" onClick={ this.onSave }>Save</button>
+        <button className="ui button" onClick={ this.props.onCancel }>Cancel</button>
       </form>
     );
   },
