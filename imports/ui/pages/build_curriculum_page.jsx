@@ -116,23 +116,25 @@ const BuildCurriculumPage = React.createClass({
     }
   },
   renderNewLessonForm() {
-    if (this.state.showNewLessonForm) {
-      return (
-        <div className="ui segment">
-          <LessonForm lesson={ new Lesson() }
-                      onSave={ this.saveLesson }
-                      onCancel={ this.hideNewLessonForm } />
-        </div>
-      );
-    } else {
-      return (
-        <button className="green ui labeled icon button"
-                onClick={ this.showNewLessonForm }
-                style={ {marginTop: '1rem'} }>
-          <i className="plus icon" />
-          New Lesson
-        </button>
-      );
+    if (this.props.curriculum._id) {
+      if (this.state.showNewLessonForm) {
+        return (
+          <div className="ui segment">
+            <LessonForm lesson={ new Lesson() }
+                        onSave={ this.saveLesson }
+                        onCancel={ this.hideNewLessonForm } />
+          </div>
+        );
+      } else {
+        return (
+          <button className="green ui labeled icon button"
+                  onClick={ this.showNewLessonForm }
+                  style={ {marginTop: '1rem'} }>
+            <i className="plus icon" />
+            New Lesson
+          </button>
+        );
+      }
     }
   },
   render() {
