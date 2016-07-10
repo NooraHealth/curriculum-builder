@@ -39,7 +39,7 @@ Meteor.methods({
   },
   'modules.remove'(_id) {
     if (!Meteor.userId()) {
-      throw new Meteor.Error('Lessons.methods.delete.not-logged-in', 'Must be logged in to update lessons.');
+      throw new Meteor.Error('Modules.methods.delete.not-logged-in', 'Must be logged in to update modules.');
     }
 
     return Modules.remove({ _id });
