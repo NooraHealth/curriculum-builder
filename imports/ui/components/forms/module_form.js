@@ -106,7 +106,7 @@ export const ModuleForm = React.createClass({
     };
 
     const renderImagePreview = i => {
-        if (this.state.optionsImagesPreview) {
+        if (this.state.optionsImagesPreview && this.state.optionsImagesPreview.get(i)) {
           return (
             <img className="ui small image"
                  src={ this.state.optionsImagesPreview.get(i) }
@@ -467,7 +467,7 @@ export const ModuleForm = React.createClass({
   },
   updateOptionsImagesPreviewFactory(i) {
     return event => {
-      let optionsImagesPreview = this.state.optionsImagesPreview || [];
+      let optionsImagesPreview = this.state.optionsImagesPreview || Immutable.List();
 
       if (window.URL && event.target.files.length > 0) {
         const preview = window.URL.createObjectURL(event.target.files[0]);
