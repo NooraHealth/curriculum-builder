@@ -165,7 +165,7 @@ const BuildCurriculumPage = React.createClass({
         console.error(error);
       } else {
         if ("insertedId" in results) {
-          FlowRouter.go(`/${results.insertedId}`);
+          FlowRouter.go(`/curriculums/${results.insertedId}`);
         } else {
           this.addNag("Curriculum saved");
         }
