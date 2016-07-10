@@ -85,10 +85,11 @@ const LessonPage = React.createClass({
         </div>
       );
     } else {
+      const style = this.state.modules.size ? {marginTop: '1rem'} : {};
       return (
         <button className="green ui labeled icon button"
                 onClick={ this.showNewModuleForm }
-                style={ {marginTop: '1rem'} }>
+                style={ style }>
           <i className="plus icon" />
           New Module
         </button>

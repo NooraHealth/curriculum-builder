@@ -98,10 +98,11 @@ const BuildCurriculumPage = React.createClass({
           </div>
         );
       } else {
+        const style = this.state.lessons.size ? {marginTop: '1rem'} : {};
         return (
           <button className="green ui labeled icon button"
                   onClick={ this.showNewLessonForm }
-                  style={ {marginTop: '1rem'} }>
+                  style={ style }>
             <i className="plus icon" />
             New Lesson
           </button>
