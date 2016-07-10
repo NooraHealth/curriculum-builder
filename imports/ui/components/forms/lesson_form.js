@@ -7,6 +7,8 @@ import { Progress } from '../semantic-ui/progress';
 
 import { imageURL } from '../../../uploads/image';
 
+import classnames from '../../../utilities/classnames';
+
 export const LessonForm = React.createClass({
   propTypes: {
     lesson: React.PropTypes.object,
@@ -16,7 +18,9 @@ export const LessonForm = React.createClass({
   getInitialState() {
     return {
       lesson: this.props.lesson,
-      imagePreview: this.props.lesson.image && imageURL(this.props.lesson.image)
+      imagePreview: this.props.lesson.image && imageURL(this.props.lesson.image),
+      titleError: false,
+      imageError: false
     };
   },
   renderProgressBar() {
@@ -37,18 +41,20 @@ export const LessonForm = React.createClass({
 
     return (
       <form className="ui form">
-        <div className="field">
+        <div className={ classnames("field", {error: this.state.titleError}) }>
           <label>Title</label>
           <input type="text" value={ this.state.lesson.title } onChange={ this.onTitleChange } />
         </div>
 
-        <div className="field">
+        <div className={ classnames("field", {error: this.state.imageError}) }>
           <label>Image</label>
           <div>
             { renderImagePreview() }
             <input type="file" ref={ c => this._image = c } onChange={ this.onImageChange } />
           </div>
         </div>
+
+        { this.renderProgressBar() }
 
         <button className="ui primary button" onClick={ this.onSave }>Save</button>
         <button className="ui button" onClick={ this.props.onCancel }>Cancel</button>
@@ -57,16 +63,36 @@ export const LessonForm = React.createClass({
   },
   onTitleChange(event) {
     const lesson = this.state.lesson.set('title', event.target.value);
-    this.setState({lesson});
+    this.setState({
+      lesson,
+      titleError: false
+    });
   },
   onImageChange(event) {
     if (window.URL && event.target.files.length > 0) {
       const imagePreview = window.URL.createObjectURL(event.target.files[0]);
-      this.setState({imagePreview});
+      this.setState({
+        imagePreview,
+        imageError: false
+      });
     }
   },
   onSave(event) {
     event.preventDefault();
+
+    let { titleError, imageError } = this.state;
+
+    titleError = !this.state.lesson.title;
+    imageError = this._image.files.length === 0 && !this.state.lesson.image;
+
+    this.setState({
+      titleError,
+      imageError
+    });
+
+    if (titleError || imageError) {
+      return;
+    }
 
     if (this._image.files.length === 0) {
       return this.props.onSave(this.state.lesson);
@@ -88,7 +114,7 @@ export const LessonForm = React.createClass({
     });
 
     Tracker.autorun(c => {
-      const progress = ImageUploader.progress();
+      const progress = ImageUploader.progress() || 0;
 
       this.setState({progress});
 

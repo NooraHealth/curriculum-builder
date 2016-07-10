@@ -22,6 +22,8 @@ import { Curriculums, Lessons } from 'meteor/noorahealth:mongo-schemas';
 import '../../api/curriculums';
 import { Lesson } from '../../api/lessons';
 
+import classnames from '../../utilities/classnames';
+
 const conditions = ["Cardiac Surgery", "Diabetes", "Neonatology"];
 const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 
@@ -36,7 +38,8 @@ const BuildCurriculumPage = React.createClass({
   getInitialState() {
     return {
       lessons: Immutable.List(this.props.lessons),
-      showNewLessonForm: false
+      showNewLessonForm: false,
+      titleError: false
     };
   },
   renderMenu() {
@@ -56,9 +59,13 @@ const BuildCurriculumPage = React.createClass({
 
     return (
       <form className="ui form">
-        <div className="field">
+        <div className={ classnames("field", {error: this.state.titleError})}>
           <label>Title</label>
-          <input type="text" name="title" placeholder="New Title" defaultValue={ title } ref={ c => this._title = c } />
+          <input type="text"
+                 name="title"
+                 placeholder="New Title"
+                 defaultValue={ title } ref={ c => this._title = c }
+                 onChange={ this.onTitleChange } />
         </div>
 
         <div className="field">
@@ -154,6 +161,12 @@ const BuildCurriculumPage = React.createClass({
   saveCurriculum(event) {
     event.preventDefault();
 
+    if (this._title.value.trim() === '') {
+      return this.setState({
+        titleError: true
+      });
+    }
+
     Meteor.call('curriculums.upsert', {
       _id: this.props.curriculum._id,
       title: this._title.value,
@@ -223,6 +236,13 @@ const BuildCurriculumPage = React.createClass({
         this.persistLessonsOrder();
       }
     });
+  },
+  onTitleChange() {
+    if (this.state.titleError) {
+      this.setState({
+        titleError: false
+      });
+    }
   },
   onChangeOrder(order) {
     const lessons = this.state.lessons.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
