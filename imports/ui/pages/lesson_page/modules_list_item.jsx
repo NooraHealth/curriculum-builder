@@ -17,7 +17,8 @@ export const ModulesListItem = React.createClass({
   propTypes: {
     edit: React.PropTypes.bool,
     module: React.PropTypes.instanceOf(Module).isRequired,
-    onSave: React.PropTypes.func.isRequired
+    onSave: React.PropTypes.func.isRequired,
+    onRemove: React.PropTypes.func.isRequired
   },
   getInitialState() {
     return {
@@ -42,10 +43,25 @@ export const ModulesListItem = React.createClass({
     const type  = humanFriendlyType[this.props.module.type];
     const title = this.props.module.title || this.props.module.question;
 
+    const containerStyle = {
+      display: 'flex',
+      alignItems: 'baseline'
+    };
+
+    const titleStyle = {
+      cursor: 'pointer',
+      flexGrow: 1
+    };
+
     return (
-      <div className="title" onClick={ this.toggleExpand } style={ {cursor: 'pointer'} }>
+      <div className="title" style={ containerStyle }>
         <i className="grabber move icon" />
-        <b>{ type }</b> - { title }
+        <span style={ titleStyle } onClick={ this.toggleExpand }>
+          <b>{ type }</b> - { title }
+        </span>
+        <button className="negative ui icon button" onClick={ this.onRemove }>
+          <i className="trash outline icon" />
+        </button>
       </div>
     );
   },
@@ -97,6 +113,15 @@ export const ModulesListItem = React.createClass({
   onSave(module) {
     this.props.onSave(module);
     this.disableEdit();
+  },
+  onRemove(event) {
+    event.preventDefault();
+
+    const title = this.props.module.title || this.props.module.question;
+
+    if (confirm(`Are you sure you want to remove ${title}?`)) {
+      this.props.onRemove(this.props.module);
+    }
   },
   toggleExpand(event) {
     event.preventDefault();

@@ -61,6 +61,7 @@ const LessonPage = React.createClass({
         return (
           <ModulesListItem key={ m._id }
                            onSave={ this.saveModule }
+                           onRemove={ this.removeModule }
                            module={ m } />
         );
       });
@@ -140,6 +141,23 @@ const LessonPage = React.createClass({
         });
       }
     });
+  },
+  removeModule(module) {
+    Meteor.call('modules.remove', module._id, (error, results) => {
+      if (error) {
+        console.error(error);
+      } else {
+        let { modules } = this.state;
+        const index = modules.findIndex(x => x._id === module._id);
+        modules = modules.delete(index);
+        this.setState({
+          modules
+        });
+
+        Meteor.call('curriculums.touch', this.props.curriculum._id);
+        this.persistModulesOrder();
+      }
+    })
   },
   showNewModuleForm(event) {
     event.preventDefault();

@@ -36,5 +36,12 @@ Meteor.methods({
       video: module.video,
       audio: module.audio
     }});
+  },
+  'modules.remove'(_id) {
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('Lessons.methods.delete.not-logged-in', 'Must be logged in to update lessons.');
+    }
+
+    return Modules.remove({ _id });
   }
 });
