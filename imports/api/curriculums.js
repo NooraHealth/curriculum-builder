@@ -9,7 +9,7 @@ const Curriculum = Immutable.Record({
   title: '',
   condition: '',
   language: '',
-  lessons: Immutable.List()
+  lessons: []
 });
 
 export { Curriculum };

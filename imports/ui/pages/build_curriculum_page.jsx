@@ -12,6 +12,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 
 import Sortable from 'react-sortablejs';
 
+import { CurriculumForm } from '../components/forms/curriculum_form';
 import { LessonForm } from '../components/forms/lesson_form';
 import { LessonsListItem } from './build_curriculum_page/lessons_list_item';
 
@@ -19,13 +20,10 @@ import { NagsMixin } from '../mixins/nags';
 
 import { Curriculums, Lessons } from 'meteor/noorahealth:mongo-schemas';
 
-import '../../api/curriculums';
+import { Curriculum } from '../../api/curriculums';
 import { Lesson } from '../../api/lessons';
 
 import classnames from '../../utilities/classnames';
-
-const conditions = ["Cardiac Surgery", "Diabetes", "Neonatology"];
-const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 
 const BuildCurriculumPage = React.createClass({
   mixins: [NagsMixin],
@@ -38,8 +36,7 @@ const BuildCurriculumPage = React.createClass({
   getInitialState() {
     return {
       lessons: Immutable.List(this.props.lessons),
-      showNewLessonForm: false,
-      titleError: false
+      showNewLessonForm: false
     };
   },
   renderMenu() {
@@ -52,38 +49,6 @@ const BuildCurriculumPage = React.createClass({
           </a>
         </div>
       </div>
-    );
-  },
-  renderCurriculumForm() {
-    const { title, condition, language } = this.props.curriculum;
-
-    return (
-      <form className="ui form">
-        <div className={ classnames("field", {error: this.state.titleError})}>
-          <label>Title</label>
-          <input type="text"
-                 name="title"
-                 placeholder="New Title"
-                 defaultValue={ title } ref={ c => this._title = c }
-                 onChange={ this.onTitleChange } />
-        </div>
-
-        <div className="field">
-          <label>Condition</label>
-          <select className="ui fluid dropdown" defaultValue={ condition || conditions[0] } ref={ c => this._condition = c }>
-            { conditions.map(condition => <option key={ condition } value={ condition }>{ condition }</option>) }
-          </select>
-        </div>
-
-        <div className="field">
-          <label>Language</label>
-          <select className="ui fluid dropdown" defaultValue={ language || languages[0] } ref={ c => this._language = c }>
-            { languages.map(language => <option key={ language } value={ language }>{ language }</option>) }
-          </select>
-        </div>
-
-        <button className="ui primary button" onClick={ this.saveCurriculum }>Save</button>
-      </form>
     );
   },
   renderLessons() {
@@ -150,7 +115,8 @@ const BuildCurriculumPage = React.createClass({
         { this.renderNags() }
         { this.renderMenu() }
 
-        { this.renderCurriculumForm() }
+        <CurriculumForm curriculum={ this.props.curriculum }
+                        onSave={ this.saveCurriculum } />
 
         { this.renderLessonsSegment() }
 
@@ -158,22 +124,8 @@ const BuildCurriculumPage = React.createClass({
       </div>
     );
   },
-  saveCurriculum(event) {
-    event.preventDefault();
-
-    if (this._title.value.trim() === '') {
-      return this.setState({
-        titleError: true
-      });
-    }
-
-    Meteor.call('curriculums.upsert', {
-      _id: this.props.curriculum._id,
-      title: this._title.value,
-      condition: this._condition.value,
-      language: this._language.value,
-      lessons: this.state.lessons.map(lesson => lesson._id).toJS()
-    }, (error, results) => {
+  saveCurriculum(curriculum) {
+    Meteor.call('curriculums.upsert', curriculum.toJS(), (error, results) => {
       if (error) {
         console.error(error);
       } else {
@@ -264,9 +216,9 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   const lessonsHandle = Meteor.subscribe('lessons.all');
 
   const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
-  const curriculum = Curriculums.findOne({ _id });
+  const curriculum = new Curriculum(Curriculums.findOne({ _id }));
 
-  const lesson_ids = curriculum ? curriculum.lessons : [];
+  const lesson_ids = curriculum.lessons;
 
   const lessons = Lessons.find({ _id: { $in: lesson_ids }})
                          .fetch()
