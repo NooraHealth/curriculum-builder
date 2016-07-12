@@ -61,6 +61,10 @@ AccountsTemplates.configure({
     if (!error && state === 'signIn') {
       FlowRouter.go('/');
     }
+  },
+  onLogoutHook() {
+    console.log('yo');
+    FlowRouter.go('/signin');
   }
 });
 

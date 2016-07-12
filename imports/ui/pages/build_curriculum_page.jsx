@@ -48,6 +48,12 @@ const BuildCurriculumPage = React.createClass({
             Back to curriculums list
           </a>
         </div>
+
+        <div className="ui right item">
+          <a href="#" onClick={ e => e.preventDefault() || AccountsTemplates.logout() }>
+            Sign Out
+          </a>
+        </div>
       </div>
     );
   },

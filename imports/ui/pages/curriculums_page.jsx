@@ -6,6 +6,16 @@ import { createContainer } from 'meteor/react-meteor-data';
 import { Curriculums } from 'meteor/noorahealth:mongo-schemas';
 
 function CurriculumsPage({ curriculums }) {
+  const menu = (
+    <div className="ui text menu">
+      <div className="ui right item">
+        <a href="#" onClick={ e => e.preventDefault() || AccountsTemplates.logout() }>
+          Sign Out
+        </a>
+      </div>
+    </div>
+  );
+
   const content = curriculums.map(({_id, title}) => {
     return (
       <li key={ _id }>
@@ -15,13 +25,17 @@ function CurriculumsPage({ curriculums }) {
   });
 
   return (
-    <ul>
-      <li>
-        <a href="/curriculums/new">New Curriculum</a>
-      </li>
+    <div>
+      { menu }
 
-      { content }
-    </ul>
+      <ul>
+        <li>
+          <a href="/curriculums/new">New Curriculum</a>
+        </li>
+
+        { content }
+      </ul>
+    </div>
   );
 }
 
