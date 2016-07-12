@@ -63,7 +63,6 @@ AccountsTemplates.configure({
     }
   },
   onLogoutHook() {
-    console.log('yo');
     FlowRouter.go('/signin');
   }
 });
