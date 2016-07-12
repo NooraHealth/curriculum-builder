@@ -12,6 +12,8 @@ import { audioURL, supportedMIMEs as audioMIMEs } from '../../../uploads/audio';
 import { imageURL, supportedMIMEs as imageMIMEs } from '../../../uploads/image';
 import { videoURL, supportedMIMEs as videoMIMEs } from '../../../uploads/video';
 
+import Previews from './module_form/previews';
+
 // Note: Some of the input elements in the render<field name> methods have
 // some seemingly redundant key attributes. They are necessary due to issues
 // with some browsers (i.e., Safari). This issue has been reported to ReactJS:
@@ -24,9 +26,10 @@ export const ModuleForm = React.createClass({
     onSave: React.PropTypes.func.isRequired
   },
   getInitialState() {
-    const state = this._defaultPreviewURLs();
-    state.type = this.props.module.type;
-    return state;
+    return {
+      previews: this._defaultPreviewURLs(),
+      type: this.props.module.type
+    };
   },
   componentWillMount() {
     this.correctOptions = [];
@@ -64,9 +67,9 @@ export const ModuleForm = React.createClass({
   },
   renderImage() {
     const renderImagePreview = () => {
-      if (this.state.imagePreview) {
+      if (this.state.previews.image) {
         return <img className="ui small image"
-                    src={ this.state.imagePreview }
+                    src={ this.state.previews.image }
                     style={ {display: 'inline', marginRight: '10px'} } />
       }
     };
@@ -81,7 +84,7 @@ export const ModuleForm = React.createClass({
                  accept={ imageMIMEs.join(',') }
                  key="image"
                  ref={ c => this.image = c }
-                 onChange={ this.updatePreviewFactory('imagePreview') } />
+                 onChange={ this.updatePreviewFactory('image') } />
         </div>
       </div>
     );
@@ -107,10 +110,10 @@ export const ModuleForm = React.createClass({
     };
 
     const renderImagePreview = i => {
-        if (this.state.optionsImagesPreview && this.state.optionsImagesPreview.get(i)) {
+        if (this.state.previews.options_images.get(i)) {
           return (
             <img className="ui small image"
-                 src={ this.state.optionsImagesPreview.get(i) }
+                 src={ this.state.previews.options_images.get(i) }
                  style={ {display: 'inline', marginRight: '10px'} } />
           );
         }
@@ -174,9 +177,9 @@ export const ModuleForm = React.createClass({
   },
   renderCorrectAudio() {
     const renderCorrectAudioPreview = () => {
-      if (this.state.correctAudioPreview) {
+      if (this.state.previews.correct_audio) {
         return (
-          <audio src={ this.state.correctAudioPreview }
+          <audio src={ this.state.previews.correct_audio }
                  controls="true"
                  style={ {marginRight: '10px'} } />
         );
@@ -193,16 +196,16 @@ export const ModuleForm = React.createClass({
                  accept={ audioMIMEs.join(',') }
                  key="correct_audio"
                  ref={ c => this.correct_audio = c }
-                 onChange={ this.updatePreviewFactory('correctAudioPreview') } />
+                 onChange={ this.updatePreviewFactory('correct_audio') } />
         </div>
       </div>
     );
   },
   renderVideo() {
     const renderVideoPreview = () => {
-      if (this.state.videoPreview) {
+      if (this.state.previews.video) {
         return (
-          <video src={ this.state.videoPreview }
+          <video src={ this.state.previews.video }
                  style={ {width: '150px', marginRight: '10px'} }
                  controls="true" />
         );
@@ -219,16 +222,16 @@ export const ModuleForm = React.createClass({
                  accept={ videoMIMEs.join(',') }
                  key="video"
                  ref={ c => this.video = c }
-                 onChange={ this.updatePreviewFactory('videoPreview') }/>
+                 onChange={ this.updatePreviewFactory('video') }/>
         </div>
       </div>
     );
   },
   renderAudio() {
     const renderAudioPreview = () => {
-      if (this.state.audioPreview) {
+      if (this.state.previews.audio) {
         return (
-          <audio src={ this.state.audioPreview }
+          <audio src={ this.state.previews.audio }
                  controls="true"
                  style={ {'marginRight': '10px'} } />
         );
@@ -245,7 +248,7 @@ export const ModuleForm = React.createClass({
                  accept={ audioMIMEs.join(',') }
                  key="audio"
                  ref={ c => this.audio = c }
-                 onChange={ this.updatePreviewFactory('audioPreview') } />
+                 onChange={ this.updatePreviewFactory('audio') } />
         </div>
       </div>
     );
@@ -354,15 +357,31 @@ export const ModuleForm = React.createClass({
   },
 
   onTypeChange(event) {
-    let state;
+    let state = {
+      type: event.target.value
+    };
 
-    if (event.target.value === this.state.type) {
-      state = {};
-    } else {
-      state = this._defaultPreviewURLs();
+    if (event.target.value !== this.state.type) {
+      state.previews = this._defaultPreviewURLs();
     }
 
-    state.type = event.target.value;
+    // Reset the input fields if necessary
+    (() => {
+      const fileProperties = {
+        MULTIPLE_CHOICE: ['correct_audio', 'audio'],
+        SCENARIO: ['image', 'correct_audio', 'audio'],
+        BINARY: ['image', 'correct_audio', 'audio'],
+        VIDEO: ['video'],
+        SLIDE: ['image', 'audio']
+      };
+
+      fileProperties[event.target.value].forEach(property => {
+        if (fileProperties[this.state.type].indexOf(property) !== -1) {
+          this[property].value = "";
+        }
+      });
+    })();
+
     this.setState(state);
   },
 
@@ -465,7 +484,7 @@ export const ModuleForm = React.createClass({
       if (window.URL && event.target.files.length > 0) {
         const preview = window.URL.createObjectURL(event.target.files[0]);
         this.setState({
-          [property]: preview
+          previews: this.state.previews.set(property, preview)
         });
       }
     };
@@ -476,25 +495,23 @@ export const ModuleForm = React.createClass({
 
       if (window.URL && event.target.files.length > 0) {
         const preview = window.URL.createObjectURL(event.target.files[0]);
-        optionsImagesPreview = optionsImagesPreview.set(i, preview);
         this.setState({
-          optionsImagesPreview
+          previews: this.state.previews.setIn(['options_images', i], preview)
         });
       }
     };
   },
 
   _defaultPreviewURLs() {
-    const output = {
-      imagePreview: this.props.module.image && imageURL(this.props.module.image),
-      optionsImagesPreview: undefined,
-      correctAudioPreview: this.props.module.correct_audio && audioURL(this.props.module.correct_audio),
-      audioPreview: this.props.module.audio && audioURL(this.props.module.audio),
-      videoPreview: this.props.module.video && videoURL(this.props.module.video)
-    };
+    let output = new Previews({
+      image: this.props.module.image && imageURL(this.props.module.image),
+      correct_audio: this.props.module.correct_audio && audioURL(this.props.module.correct_audio),
+      audio: this.props.module.audio && audioURL(this.props.module.audio),
+      video: this.props.module.video && videoURL(this.props.module.video)
+    });
 
     if (this.props.module.type === 'MULTIPLE_CHOICE' && this.props.module.options && this.props.module.options.length === 6) {
-      output.optionsImagesPreview = Immutable.List(this.props.module.options.map(imageURL));
+      output = output.set('options_images', Immutable.List(this.props.module.options.map(imageURL)));
     }
 
     return output;
