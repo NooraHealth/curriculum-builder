@@ -2,7 +2,11 @@ import { Meteor } from 'meteor/meteor';
 
 import Immutable from 'immutable';
 
-import { Lessons, Modules } from 'meteor/noorahealth:mongo-schemas';
+import { Lessons } from 'meteor/noorahealth:mongo-schemas';
+
+import { deleteFile as deleteImage } from '../uploads/image';
+
+import './modules';
 
 const Lesson = Immutable.Record({
   _id: '',
@@ -43,11 +47,15 @@ Meteor.methods({
 
     const lesson = Lessons.findOne({ _id });
 
-    Lessons.remove({ _id });
-    Modules.remove({
-      _id: {
-        $in: lesson.modules
+    if (lesson) {
+      if (Meteor.isServer) {
+        if (lesson.image) {
+          deleteImage(lesson.image);
+        }
       }
-    });
+
+      Lessons.remove({ _id });
+      lesson.modules.forEach(_id => Meteor.call('modules.remove', _id));
+    }
   }
 });

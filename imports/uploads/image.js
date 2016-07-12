@@ -3,6 +3,8 @@ import { Slingshot } from 'meteor/edgee:slingshot';
 import path from 'path';
 import uuid from 'node-uuid';
 
+import knoxClient from './knox_client';
+
 const { S3Bucket: bucket, S3Region: region } = Meteor.settings.public;
 
 const supportedMIMEs = ["image/jpeg", "image/png"];
@@ -31,6 +33,18 @@ if (Meteor.isServer) {
 
 export function imageURL(filename) {
   return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Image/${filename}`;
+}
+
+export function deleteFile(filename, callback) {
+  return new Promise((resolve, reject) => {
+    knoxClient.deleteFile(`NooraHealthContent/Image/${filename}`, (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
 }
 
 export { supportedMIMEs };

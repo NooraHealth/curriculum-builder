@@ -3,6 +3,8 @@ import { Slingshot } from 'meteor/edgee:slingshot';
 import path from 'path';
 import uuid from 'node-uuid';
 
+import knoxClient from './knox_client';
+
 const { S3Bucket: bucket, S3Region: region } = Meteor.settings.public;
 
 const supportedMIMEs = ["audio/m4a", "audio/x-m4a", "audio/mp3", "audio/wav", "audio/x-wav", "audio/ogg", "audio/aac"];
@@ -31,6 +33,18 @@ if (Meteor.isServer) {
 
 export function audioURL(filename) {
   return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Audio/${filename}`;
+}
+
+export function deleteFile(filename, callback) {
+  return new Promise((resolve, reject) => {
+    knoxClient.deleteFile(`NooraHealthContent/Audio/${filename}`, (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
 }
 
 export { supportedMIMEs };
