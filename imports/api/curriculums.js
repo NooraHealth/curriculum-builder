@@ -2,7 +2,9 @@ import { Meteor } from 'meteor/meteor';
 
 import Immutable from 'immutable';
 
-import { Curriculums } from 'meteor/noorahealth:mongo-schemas';
+import { Curriculums, Lessons, Modules } from 'meteor/noorahealth:mongo-schemas';
+
+import './lessons';
 
 const Curriculum = Immutable.Record({
   _id: '',
@@ -49,5 +51,20 @@ Meteor.methods({
         last_updated: new Date()
       }
     });
+  },
+  'curriculums.remove'(_id) {
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('Curriculums.methods.delete.not-logged-in', 'Must be logged in to update curriculums.');
+    }
+
+    const curriculum = Curriculums.findOne({ _id });
+    const lessons = Lessons.find({
+      _id: {
+        $in: curriculum.lessons
+      }
+    }).fetch();
+
+    Curriculums.remove({ _id });
+    lessons.forEach(({ _id }) => Meteor.call('lessons.remove', _id));
   }
 })
