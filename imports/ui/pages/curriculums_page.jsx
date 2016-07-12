@@ -5,7 +5,15 @@ import { createContainer } from 'meteor/react-meteor-data';
 
 import { Curriculums } from 'meteor/noorahealth:mongo-schemas';
 
+import '../../api/curriculums';
+
 function CurriculumsPage({ curriculums }) {
+  const removeCurriculum = ({ _id, title }) => {
+    if (confirm(`Are you sure you want to delete ${title}?`)) {
+      Meteor.call('curriculums.remove', _id)
+    }
+  };
+
   const menu = (
     <div className="ui text menu">
       <div className="ui right item">
@@ -16,10 +24,14 @@ function CurriculumsPage({ curriculums }) {
     </div>
   );
 
-  const content = curriculums.map(({_id, title}) => {
+  const content = curriculums.map(curriculum => {
+    const { _id, title } = curriculum;
+
     return (
       <li key={ _id }>
         <a href={ `/curriculums/${_id}` }>{ title }</a>
+        { ' ' }
+        (<a href="#" onClick={ removeCurriculum.bind(this, curriculum) }>Delete</a>)
       </li>
     );
   });
