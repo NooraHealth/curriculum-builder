@@ -5,8 +5,10 @@ import uuid from 'node-uuid';
 
 const { S3Bucket: bucket, S3Region: region } = Meteor.settings.public;
 
+const supportedMIMEs = ["video/mp4", "video/quicktime"];
+
 Slingshot.fileRestrictions("videoUploads", {
-  allowedFileTypes: ["video/mp4", "video/quicktime"],
+  allowedFileTypes: supportedMIMEs,
   maxSize: 10 * 1024 * 1024
 });
 
@@ -30,3 +32,5 @@ if (Meteor.isServer) {
 export function videoURL(filename) {
   return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Video/${filename}`;
 }
+
+export { supportedMIMEs };

@@ -5,8 +5,10 @@ import uuid from 'node-uuid';
 
 const { S3Bucket: bucket, S3Region: region } = Meteor.settings.public;
 
+const supportedMIMEs = ["image/jpeg", "image/png"];
+
 Slingshot.fileRestrictions("imageUploads", {
-  allowedFileTypes: ["image/jpeg", "image/png"],
+  allowedFileTypes: supportedMIMEs,
   maxSize: 10 * 1024 * 1024
 });
 
@@ -30,3 +32,5 @@ if (Meteor.isServer) {
 export function imageURL(filename) {
   return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Image/${filename}`;
 }
+
+export { supportedMIMEs };

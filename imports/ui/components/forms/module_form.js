@@ -8,9 +8,9 @@ import { Progress } from '../semantic-ui/progress';
 
 import { Module } from '../../../api/modules';
 
-import { audioURL } from '../../../uploads/audio';
-import { imageURL } from '../../../uploads/image';
-import { videoURL } from '../../../uploads/video';
+import { audioURL, supportedMIMEs as audioMIMEs } from '../../../uploads/audio';
+import { imageURL, supportedMIMEs as imageMIMEs } from '../../../uploads/image';
+import { videoURL, supportedMIMEs as videoMIMEs } from '../../../uploads/video';
 
 // Note: Some of the input elements in the render<field name> methods have
 // some seemingly redundant key attributes. They are necessary due to issues
@@ -78,6 +78,7 @@ export const ModuleForm = React.createClass({
         <div>
           { renderImagePreview() }
           <input type="file"
+                 accept={ imageMIMEs.join(',') }
                  key="image"
                  ref={ c => this.image = c }
                  onChange={ this.updatePreviewFactory('imagePreview') } />
@@ -126,6 +127,7 @@ export const ModuleForm = React.createClass({
               <label>
                 { renderImagePreview(i) }
                 <input type="file"
+                       accept={ imageMIMEs.join(',') }
                        ref={ c => this.options[i] = c }
                        onChange={ this.updateOptionsImagesPreviewFactory(i) }/>
               </label>
@@ -188,6 +190,7 @@ export const ModuleForm = React.createClass({
         <div>
           { renderCorrectAudioPreview() }
           <input type="file"
+                 accept={ audioMIMEs.join(',') }
                  key="correct_audio"
                  ref={ c => this.correct_audio = c }
                  onChange={ this.updatePreviewFactory('correctAudioPreview') } />
@@ -213,6 +216,7 @@ export const ModuleForm = React.createClass({
         <div>
           { renderVideoPreview() }
           <input type="file"
+                 accept={ videoMIMEs.join(',') }
                  key="video"
                  ref={ c => this.video = c }
                  onChange={ this.updatePreviewFactory('videoPreview') }/>
@@ -238,6 +242,7 @@ export const ModuleForm = React.createClass({
         <div>
           { renderAudioPreview() }
           <input type="file"
+                 accept={ audioMIMEs.join(',') }
                  key="audio"
                  ref={ c => this.audio = c }
                  onChange={ this.updatePreviewFactory('audioPreview') } />
