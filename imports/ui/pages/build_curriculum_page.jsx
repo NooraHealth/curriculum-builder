@@ -166,9 +166,12 @@ const BuildCurriculumPage = React.createClass({
         let { lessons } = this.state;
         const index = lessons.findIndex(x => x._id === lesson._id);
         lessons = lessons.delete(index);
+
         this.setState({
           lessons
         });
+
+        this.persistLessonsOrder();
       }
     });
   },
