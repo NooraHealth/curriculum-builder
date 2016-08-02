@@ -1,8 +1,0 @@
-{
-  "public": {
-    "S3Bucket": "my-bucket",
-    "S3Region": "ap-southeast-1"
-  },
-  "AWSAccessKeyId": "hello",
-  "AWSSecretAccessKey": "world"
-}
