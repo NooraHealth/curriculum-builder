@@ -48,6 +48,12 @@ const BuildCurriculumPage = React.createClass({
             Back to curriculums list
           </a>
         </div>
+
+        <div className="ui right item">
+          <a href="#" onClick={ e => e.preventDefault() || AccountsTemplates.logout() }>
+            Sign Out
+          </a>
+        </div>
       </div>
     );
   },
@@ -160,9 +166,12 @@ const BuildCurriculumPage = React.createClass({
         let { lessons } = this.state;
         const index = lessons.findIndex(x => x._id === lesson._id);
         lessons = lessons.delete(index);
+
         this.setState({
           lessons
         });
+
+        this.persistLessonsOrder();
       }
     });
   },
