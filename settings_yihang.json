@@ -1,0 +1,8 @@
+{
+  "public": {
+    "S3Bucket": "yh-nooradev",
+    "S3Region": "ap-southeast-1"    
+  },
+  "AWSAccessKeyId": "AKIAIEVYHNOC2P3ZSRYQ",
+  "AWSSecretAccessKey": "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"
+}

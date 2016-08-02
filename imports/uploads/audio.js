@@ -28,5 +28,6 @@ if (Meteor.isServer) {
 }
 
 export function audioURL(filename) {
-  return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Audio/${filename}`;
+  //return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Audio/${filename}`;
+  return `https://noorahealthcontent.noorahealth.org/NooraHealthContent/Audio/${filename}`;
 }

@@ -28,5 +28,6 @@ if (Meteor.isServer) {
 }
 
 export function imageURL(filename) {
-  return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Image/${filename}`;
+  //return `https://${bucket}.s3-${region}.amazonaws.com/NooraHealthContent/Image/${filename}`;
+  return `https://noorahealthcontent.noorahealth.org/NooraHealthContent/Image/${filename}`;
 }
