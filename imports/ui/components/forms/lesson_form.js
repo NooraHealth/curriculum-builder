@@ -5,7 +5,7 @@ import path from 'path';
 
 import { Progress } from '../semantic-ui/progress';
 
-import { imageURL } from '../../../uploads/image';
+import { imageURL, supportedMIMEs as imageMIMEs } from '../../../uploads/image';
 
 import classnames from '../../../utilities/classnames';
 
@@ -50,7 +50,10 @@ export const LessonForm = React.createClass({
           <label>Image</label>
           <div>
             { renderImagePreview() }
-            <input type="file" ref={ c => this._image = c } onChange={ this.onImageChange } />
+            <input type="file"
+                   accept={ imageMIMEs.join(',') }
+                   ref={ c => this._image = c }
+                   onChange={ this.onImageChange } />
           </div>
         </div>
 

@@ -8,9 +8,30 @@ import { Progress } from '../semantic-ui/progress';
 
 import { Module } from '../../../api/modules';
 
-import { audioURL } from '../../../uploads/audio';
-import { imageURL } from '../../../uploads/image';
-import { videoURL } from '../../../uploads/video';
+import { audioURL, supportedMIMEs as audioMIMEs } from '../../../uploads/audio';
+import { imageURL, supportedMIMEs as imageMIMEs } from '../../../uploads/image';
+import { videoURL, supportedMIMEs as videoMIMEs } from '../../../uploads/video';
+
+import classnames from '../../../utilities/classnames';
+
+import Errors from './module_form/errors';
+import Previews from './module_form/previews';
+
+const simpleProperties = {
+  MULTIPLE_CHOICE: ['type', 'question'],
+  SCENARIO: ['type', 'question'],
+  BINARY: ['type', 'question'],
+  VIDEO: ['type', 'title'],
+  SLIDE: ['type', 'title']
+};
+
+const fileProperties = {
+  MULTIPLE_CHOICE: ['correct_audio', 'audio'],
+  SCENARIO: ['image', 'correct_audio', 'audio'],
+  BINARY: ['image', 'correct_audio', 'audio'],
+  VIDEO: ['video'],
+  SLIDE: ['image', 'audio']
+};
 
 // Note: Some of the input elements in the render<field name> methods have
 // some seemingly redundant key attributes. They are necessary due to issues
@@ -24,9 +45,11 @@ export const ModuleForm = React.createClass({
     onSave: React.PropTypes.func.isRequired
   },
   getInitialState() {
-    const state = this._defaultPreviewURLs();
-    state.type = this.props.module.type;
-    return state;
+    return {
+      previews: this._defaultPreviewURLs(),
+      type: this.props.module.type,
+      errors: new Errors()
+    };
   },
   componentWillMount() {
     this.correctOptions = [];
@@ -51,50 +74,53 @@ export const ModuleForm = React.createClass({
   },
   renderTitle() {
     return (
-      <div className="field">
+      <div className={ classnames('field', {error: this.state.errors.title}) }>
         <label>Title</label>
         <input type="text"
                name="title"
                placeholder="New Title"
                defaultValue={ this.props.module.title }
                key="title"
-               ref={ c => this.title = c } />
+               ref={ c => this.title = c }
+               onChange={ this.clearError.bind(this, 'title') }/>
       </div>
     );
   },
   renderImage() {
     const renderImagePreview = () => {
-      if (this.state.imagePreview) {
+      if (this.state.previews.image) {
         return <img className="ui small image"
-                    src={ this.state.imagePreview }
+                    src={ this.state.previews.image }
                     style={ {display: 'inline', marginRight: '10px'} } />
       }
     };
 
     return (
-      <div className="field">
+      <div className={ classnames('field', {error: this.state.errors.image}) }>
         <label>Image</label>
 
         <div>
           { renderImagePreview() }
           <input type="file"
+                 accept={ imageMIMEs.join(',') }
                  key="image"
                  ref={ c => this.image = c }
-                 onChange={ this.updatePreviewFactory('imagePreview') } />
+                 onChange={ this.updatePreviewFactory('image') } />
         </div>
       </div>
     );
   },
   renderQuestion() {
     return (
-      <div className="field">
+      <div className={ classnames('field', {error: this.state.errors.question}) }>
         <label>Question</label>
         <input type="text"
                name="question"
                placeholder="To be, or not to be?"
                defaultValue={ this.props.module.question }
                key="question"
-               ref={ c => this.question = c } />
+               ref={ c => this.question = c }
+               onChange={ this.clearError.bind(this, 'question') }/>
       </div>
     );
   },
@@ -106,10 +132,10 @@ export const ModuleForm = React.createClass({
     };
 
     const renderImagePreview = i => {
-        if (this.state.optionsImagesPreview && this.state.optionsImagesPreview.get(i)) {
+        if (this.state.previews.options_images.get(i)) {
           return (
             <img className="ui small image"
-                 src={ this.state.optionsImagesPreview.get(i) }
+                 src={ this.state.previews.options_images.get(i) }
                  style={ {display: 'inline', marginRight: '10px'} } />
           );
         }
@@ -118,7 +144,7 @@ export const ModuleForm = React.createClass({
     const renderCheckboxes = () => {
       return [0, 1, 2, 3, 4, 5].map(i => {
         return (
-          <div key={ i } className="field">
+          <div key={ i } className={ classnames('field', {error: this.state.errors.options.get(i)}) }>
             <div className="ui checkbox">
               <input type="checkbox"
                      defaultChecked={ defaultChecked(i) }
@@ -126,6 +152,7 @@ export const ModuleForm = React.createClass({
               <label>
                 { renderImagePreview(i) }
                 <input type="file"
+                       accept={ imageMIMEs.join(',') }
                        ref={ c => this.options[i] = c }
                        onChange={ this.updateOptionsImagesPreviewFactory(i) }/>
               </label>
@@ -172,9 +199,9 @@ export const ModuleForm = React.createClass({
   },
   renderCorrectAudio() {
     const renderCorrectAudioPreview = () => {
-      if (this.state.correctAudioPreview) {
+      if (this.state.previews.correct_audio) {
         return (
-          <audio src={ this.state.correctAudioPreview }
+          <audio src={ this.state.previews.correct_audio }
                  controls="true"
                  style={ {marginRight: '10px'} } />
         );
@@ -182,24 +209,25 @@ export const ModuleForm = React.createClass({
     };
 
     return (
-      <div className="field">
+      <div className={ classnames('field', {error: this.state.errors.correct_audio}) }>
         <label>Correct Audio</label>
 
         <div>
           { renderCorrectAudioPreview() }
           <input type="file"
+                 accept={ audioMIMEs.join(',') }
                  key="correct_audio"
                  ref={ c => this.correct_audio = c }
-                 onChange={ this.updatePreviewFactory('correctAudioPreview') } />
+                 onChange={ this.updatePreviewFactory('correct_audio') } />
         </div>
       </div>
     );
   },
   renderVideo() {
     const renderVideoPreview = () => {
-      if (this.state.videoPreview) {
+      if (this.state.previews.video) {
         return (
-          <video src={ this.state.videoPreview }
+          <video src={ this.state.previews.video }
                  style={ {width: '150px', marginRight: '10px'} }
                  controls="true" />
         );
@@ -207,24 +235,25 @@ export const ModuleForm = React.createClass({
     };
 
     return (
-      <div className="field">
+      <div className={ classnames('field', {error: this.state.errors.video}) }>
         <label>Video</label>
 
         <div>
           { renderVideoPreview() }
           <input type="file"
+                 accept={ videoMIMEs.join(',') }
                  key="video"
                  ref={ c => this.video = c }
-                 onChange={ this.updatePreviewFactory('videoPreview') }/>
+                 onChange={ this.updatePreviewFactory('video') }/>
         </div>
       </div>
     );
   },
   renderAudio() {
     const renderAudioPreview = () => {
-      if (this.state.audioPreview) {
+      if (this.state.previews.audio) {
         return (
-          <audio src={ this.state.audioPreview }
+          <audio src={ this.state.previews.audio }
                  controls="true"
                  style={ {'marginRight': '10px'} } />
         );
@@ -232,15 +261,16 @@ export const ModuleForm = React.createClass({
     };
 
     return (
-      <div className="field">
+      <div className={ classnames('field', {error: this.state.errors.audio}) }>
         <label>Audio</label>
 
         <div>
           { renderAudioPreview() }
           <input type="file"
+                 accept={ audioMIMEs.join(',') }
                  key="audio"
                  ref={ c => this.audio = c }
-                 onChange={ this.updatePreviewFactory('audioPreview') } />
+                 onChange={ this.updatePreviewFactory('audio') } />
         </div>
       </div>
     );
@@ -349,36 +379,53 @@ export const ModuleForm = React.createClass({
   },
 
   onTypeChange(event) {
-    let state;
+    let state = {
+      type: event.target.value
+    };
 
-    if (event.target.value === this.state.type) {
-      state = {};
-    } else {
-      state = this._defaultPreviewURLs();
+    if (event.target.value !== this.state.type) {
+      state.errors = new Errors();
+      state.previews = this._defaultPreviewURLs();
     }
 
-    state.type = event.target.value;
+    // Reset the input fields if necessary
+    fileProperties[event.target.value].forEach(property => {
+      if (fileProperties[this.state.type].indexOf(property) !== -1) {
+        this[property].value = "";
+      }
+    });
+
     this.setState(state);
+  },
+
+  currentFormErrors() {
+    let errors = new Errors();
+
+    simpleProperties[this.state.type].forEach(property => {
+      if (!this[property].value) {
+        errors = errors.set(property, true);
+      }
+    });
+
+    fileProperties[this.state.type].forEach(property => {
+      if (!this[property].value && !this.props.module.get(property)) {
+        errors = errors.set(property, true);
+      }
+    });
+
+    if (this.state.type === 'MULTIPLE_CHOICE') {
+      this.options.forEach((c, i) => {
+        if (c.files.length === 0 && !((this.props.module.options || [])[i])) {
+          errors = errors.setIn(['options', i], true);
+        }
+      });
+    }
+
+    return errors;
   },
 
   onSave(event) {
     event.preventDefault();
-
-    const simpleProperties = {
-      MULTIPLE_CHOICE: ['type', 'question'],
-      SCENARIO: ['type', 'question'],
-      BINARY: ['type', 'question'],
-      VIDEO: ['type', 'title'],
-      SLIDE: ['type', 'title']
-    };
-
-    const fileProperties = {
-      MULTIPLE_CHOICE: ['correct_audio', 'audio'],
-      SCENARIO: ['image', 'correct_audio', 'audio'],
-      BINARY: ['image', 'correct_audio', 'audio'],
-      VIDEO: ['video'],
-      SLIDE: ['image', 'audio']
-    };
 
     const uploader = {
       correct_audio: 'audioUploads',
@@ -386,6 +433,14 @@ export const ModuleForm = React.createClass({
       image: 'imageUploads',
       video: 'videoUploads'
     };
+
+    const errors = this.currentFormErrors();
+
+    if (errors.any()) {
+      return this.setState({
+        errors
+      });
+    }
 
     this.setState({
       fileUploadProgress: Immutable.Map()
@@ -453,6 +508,11 @@ export const ModuleForm = React.createClass({
     this.props.onCancel();
   },
 
+  clearError(property) {
+    this.setState({
+      errors: this.state.errors.set(property, false)
+    });
+  },
   updatePreviewFactory(property) {
     return event => {
       event.preventDefault();
@@ -460,7 +520,8 @@ export const ModuleForm = React.createClass({
       if (window.URL && event.target.files.length > 0) {
         const preview = window.URL.createObjectURL(event.target.files[0]);
         this.setState({
-          [property]: preview
+          errors: this.state.errors.set(property, false),
+          previews: this.state.previews.set(property, preview)
         });
       }
     };
@@ -471,25 +532,24 @@ export const ModuleForm = React.createClass({
 
       if (window.URL && event.target.files.length > 0) {
         const preview = window.URL.createObjectURL(event.target.files[0]);
-        optionsImagesPreview = optionsImagesPreview.set(i, preview);
         this.setState({
-          optionsImagesPreview
+          errors: this.state.errors.setIn(['options', i], false),
+          previews: this.state.previews.setIn(['options_images', i], preview)
         });
       }
     };
   },
 
   _defaultPreviewURLs() {
-    const output = {
-      imagePreview: this.props.module.image && imageURL(this.props.module.image),
-      optionsImagesPreview: undefined,
-      correctAudioPreview: this.props.module.correct_audio && audioURL(this.props.module.correct_audio),
-      audioPreview: this.props.module.audio && audioURL(this.props.module.audio),
-      videoPreview: this.props.module.video && videoURL(this.props.module.video)
-    };
+    let output = new Previews({
+      image: this.props.module.image && imageURL(this.props.module.image),
+      correct_audio: this.props.module.correct_audio && audioURL(this.props.module.correct_audio),
+      audio: this.props.module.audio && audioURL(this.props.module.audio),
+      video: this.props.module.video && videoURL(this.props.module.video)
+    });
 
     if (this.props.module.type === 'MULTIPLE_CHOICE' && this.props.module.options && this.props.module.options.length === 6) {
-      output.optionsImagesPreview = Immutable.List(this.props.module.options.map(imageURL));
+      output = output.set('options_images', Immutable.List(this.props.module.options.map(imageURL)));
     }
 
     return output;

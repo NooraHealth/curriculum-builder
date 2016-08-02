@@ -58,9 +58,12 @@ ProtectedRoutes.route('/curriculums/:curriculum_id/lessons/:lesson_id', {
 
 AccountsTemplates.configure({
   onSubmitHook(error, state) {
-    if (!error && state === 'signIn') {
+    if (!error && (state === 'signIn' || state === 'signUp')) {
       FlowRouter.go('/');
     }
+  },
+  onLogoutHook() {
+    FlowRouter.go('/signin');
   }
 });
 
