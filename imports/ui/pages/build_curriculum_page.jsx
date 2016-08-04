@@ -36,9 +36,6 @@ const BuildCurriculumPage = React.createClass({
   },
   getInitialState() {
     return {
-      // beginnerLessons: Immutable.List(this.props.beginnerLessons),
-      // intermediateLessons: Immutable.List(this.props.intermediateLessons),
-      // advancedLessons: Immutable.List(this.props.advancedLessons),
       showNewLessonForm: false
     };
   },
