@@ -137,17 +137,11 @@ const BuildCurriculumPage = React.createClass({
       </div>
     );
   },
-  saveCurriculum(curriculum) {
-    Meteor.call('curriculums.upsert', curriculum.toJS(), (error, results) => {
-      if (error) {
-        console.error(error);
-      } else {
-        if ("insertedId" in results) {
-          FlowRouter.go(`/curriculums/${results.insertedId}`);
-        } else {
-          this.addNag("Curriculum saved");
-        }
-      }
+  saveCurriculum(promise) {
+    promise.then(curriculum => {
+      FlowRouter.go(`/curriculums/${curriculum._id}`);
+    }, error => {
+      console.error(error);
     });
   },
   showNewLessonForm(event) {

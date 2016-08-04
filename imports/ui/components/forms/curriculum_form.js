@@ -64,6 +64,6 @@ export const CurriculumForm = React.createClass({
                            .set('condition', this._condition.value)
                            .set('language', this._language.value);
 
-    this.props.onSave(curriculum);
+    this.props.onSave(curriculum.save());
   }
 });
