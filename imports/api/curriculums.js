@@ -6,16 +6,26 @@ import { Curriculums, Lessons, Modules } from 'meteor/noorahealth:mongo-schemas'
 
 import './lessons';
 
-const Curriculum = Immutable.Record({
+const BaseCurriculum = Immutable.Record({
   _id: '',
   title: '',
   condition: '',
   language: '',
   introduction: '',
-  beginner: [],
-  intermediate: [],
-  advanced: []
+  beginner: Immutable.List(),
+  intermediate: Immutable.List(),
+  advanced: Immutable.List()
 });
+
+export class Curriculum extends BaseCurriculum {
+  constructor(properties) {
+    super(Object.assign({}, properties, {
+      beginner: Immutable.List(properties && properties.beginner),
+      intermediate: Immutable.List(properties && properties.intermediate),
+      advanced: Immutable.List(properties && properties.advanced)
+    }));
+  }
+}
 
 export { Curriculum };
 

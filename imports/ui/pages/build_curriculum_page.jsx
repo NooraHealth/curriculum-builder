@@ -238,17 +238,17 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
   const curriculum = new Curriculum(Curriculums.findOne({ _id }));
 
-  const beginnerLessons = Lessons.find({ _id: { $in: curriculum.beginner }})
+  const beginnerLessons = Lessons.find({ _id: { $in: curriculum.beginner.toJS() }})
                                  .fetch()
                                  .sort((a, b) => curriculum.beginner.indexOf(a._id) - curriculum.beginner.indexOf(b._id))
                                  .map(l => new Lesson(l).set('type', 'beginner'));
 
-  const intermediateLessons = Lessons.find({ _id: { $in: curriculum.intermediate }})
+  const intermediateLessons = Lessons.find({ _id: { $in: curriculum.intermediate.toJS() }})
                                      .fetch()
                                      .sort((a, b) => curriculum.intermediate.indexOf(a._id) - curriculum.intermediate.indexOf(b._id))
                                      .map(l => new Lesson(l).set('type', 'intermediate'));
 
-  const advancedLessons = Lessons.find({ _id: { $in: curriculum.advanced }})
+  const advancedLessons = Lessons.find({ _id: { $in: curriculum.advanced.toJS() }})
                                  .fetch()
                                  .sort((a, b) => curriculum.advanced.indexOf(a._id) - curriculum.advanced.indexOf(b._id))
                                  .map(l => new Lesson(l).set('type', 'advanced'));
