@@ -11,7 +11,10 @@ const Curriculum = Immutable.Record({
   title: '',
   condition: '',
   language: '',
-  lessons: []
+  introduction: '',
+  beginner: [],
+  intermediate: [],
+  advanced: []
 });
 
 export { Curriculum };
@@ -26,18 +29,21 @@ Meteor.methods({
       title: curriculum.title,
       condition: curriculum.condition,
       language: curriculum.language,
-      lessons: curriculum.lessons,
+      introduction: curriculum.introduction,
+      beginner: curriculum.beginner,
+      intermediate: curriculum.intermediate,
+      advanced: curriculum.advanced,
       last_updated: new Date()
     }});
   },
-  'curriculums.setLessons'(_id, lesson_ids) {
+  'curriculums.setLessons'(_id, lesson_type, lesson_ids) {
     if (!Meteor.userId()) {
       throw new Meteor.Error('Curriculums.methods.setLessons.not-logged-in', 'Must be logged in to update curriculums.');
     }
 
     return Curriculums.update({ _id }, {
       $set: {
-        lessons: lesson_ids
+        [lesson_type]: lesson_ids
       }
     });
   },
@@ -46,11 +52,11 @@ Meteor.methods({
       throw new Meteor.Error('Curriculums.methods.touch.not-logged-in', 'Must be logged in to update curriculums.');
     }
 
-    return Curriculums.update({ _id }, {
-      $set: {
-        last_updated: new Date()
-      }
-    });
+    // return Curriculums.update({ _id }, {
+    //   $set: {
+    //     last_updated: new Date()
+    //   }
+    // });
   },
   'curriculums.remove'(_id) {
     if (!Meteor.userId()) {

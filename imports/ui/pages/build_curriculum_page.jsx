@@ -24,6 +24,7 @@ import { Curriculum } from '../../api/curriculums';
 import { Lesson } from '../../api/lessons';
 
 import classnames from '../../utilities/classnames';
+import capitalize from '../../utilities/capitalize';
 
 const BuildCurriculumPage = React.createClass({
   mixins: [NagsMixin],
@@ -35,7 +36,9 @@ const BuildCurriculumPage = React.createClass({
   },
   getInitialState() {
     return {
-      lessons: Immutable.List(this.props.lessons),
+      beginnerLessons: Immutable.List(this.props.beginnerLessons),
+      intermediateLessons: Immutable.List(this.props.intermediateLessons),
+      advancedLessons: Immutable.List(this.props.advancedLessons),
       showNewLessonForm: false
     };
   },
@@ -57,13 +60,15 @@ const BuildCurriculumPage = React.createClass({
       </div>
     );
   },
-  renderLessons() {
-    if (this.state.lessons.size > 0) {
+  renderLessons(lessons) {
+    if (lessons.size > 0) {
+      const { type } = lessons.get(0);
+
       return (
         <div className="ui list">
-          <Sortable onChange={ this.onChangeOrder } options={ {handle: ".grabber"} }>
+          <Sortable onChange={ this.onChangeOrder.bind(this, type) } options={ {handle: ".grabber"} }>
             {
-              this.state.lessons.map(lesson => {
+              lessons.map(lesson => {
                 return (
                   <LessonsListItem curriculum={ this.props.curriculum }
                                    lesson={ lesson }
@@ -80,13 +85,14 @@ const BuildCurriculumPage = React.createClass({
       return false;
     }
   },
-  renderLessonsSegment() {
+  renderLessonsSegment(type) {
     if (this.props.curriculum._id) {
       return (
         <div>
           <div className="ui divider" />
+          <h2>{ capitalize(type) }</h2>
 
-          { this.renderLessons() }
+          { this.renderLessons(this.state[`${type}Lessons`]) }
         </div>
       );
     } else {
@@ -104,11 +110,10 @@ const BuildCurriculumPage = React.createClass({
           </div>
         );
       } else {
-        const style = this.state.lessons.size ? {marginTop: '1rem'} : {};
         return (
           <button className="green ui labeled icon button"
                   onClick={ this.showNewLessonForm }
-                  style={ style }>
+                  style={ {marginTop: '1rem'} }>
             <i className="plus icon" />
             New Lesson
           </button>
@@ -125,7 +130,9 @@ const BuildCurriculumPage = React.createClass({
         <CurriculumForm curriculum={ this.props.curriculum }
                         onSave={ this.saveCurriculum } />
 
-        { this.renderLessonsSegment() }
+        { this.renderLessonsSegment('beginner') }
+        { this.renderLessonsSegment('intermediate') }
+        { this.renderLessonsSegment('advanced') }
 
         { this.renderNewLessonForm() }
       </div>
@@ -163,12 +170,12 @@ const BuildCurriculumPage = React.createClass({
       if (error) {
         console.error(error);
       } else {
-        let { lessons } = this.state;
+        let lessons = this.state[`${lesson.type}Lessons`];
         const index = lessons.findIndex(x => x._id === lesson._id);
         lessons = lessons.delete(index);
 
         this.setState({
-          lessons
+          [`${lesson.type}Lessons`]: lessons
         });
 
         this.persistLessonsOrder();
@@ -180,7 +187,8 @@ const BuildCurriculumPage = React.createClass({
       if (error) {
         console.error(error);
       } else {
-        let { lessons, showNewLessonForm } = this.state;
+        let { beginnerLessons, showNewLessonForm } = this.state;
+        let lessons = this.state[`${lesson.type}Lessons`];
 
         if ("insertedId" in results) {
           lessons = lessons.push(lesson.set('_id', results.insertedId));
@@ -191,7 +199,7 @@ const BuildCurriculumPage = React.createClass({
         }
 
         this.setState({
-          lessons,
+          [`${lesson.type}Lessons`]: lessons,
           showNewLessonForm
         });
 
@@ -206,17 +214,19 @@ const BuildCurriculumPage = React.createClass({
       });
     }
   },
-  onChangeOrder(order) {
-    const lessons = this.state.lessons.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+  onChangeOrder(type, order) {
+    const lessons = this.state[`${type}Lessons`].sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
 
     this.setState({
-      lessons
+      [`${type}Lessons`]: lessons
     });
 
     this.persistLessonsOrder();
   },
   persistLessonsOrder() {
-    Meteor.call('curriculums.setLessons', this.props.curriculum._id, this.state.lessons.map(x => x._id).toJS());
+    ['beginner', 'intermediate', 'advanced'].forEach(type => {
+      Meteor.call('curriculums.setLessons', this.props.curriculum._id, type, this.state[`${type}Lessons`].map(x => x._id).toJS());
+    });
     Meteor.call('curriculums.touch', this.props.curriculum._id);
   }
 });
@@ -228,20 +238,37 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
   const curriculum = new Curriculum(Curriculums.findOne({ _id }));
 
-  const lesson_ids = curriculum.lessons;
+  const beginnerLessons = Lessons.find({ _id: { $in: curriculum.beginner }})
+                                 .fetch()
+                                 .sort((a, b) => curriculum.beginner.indexOf(a._id) - curriculum.beginner.indexOf(b._id))
+                                 .map(l => new Lesson(l).set('type', 'beginner'));
 
-  const lessons = Lessons.find({ _id: { $in: lesson_ids }})
-                         .fetch()
-                         .sort((a, b) => lesson_ids.indexOf(a._id) - lesson_ids.indexOf(b._id))
-                         .map(l => new Lesson(l));
+  const intermediateLessons = Lessons.find({ _id: { $in: curriculum.intermediate }})
+                                     .fetch()
+                                     .sort((a, b) => curriculum.intermediate.indexOf(a._id) - curriculum.intermediate.indexOf(b._id))
+                                     .map(l => new Lesson(l).set('type', 'intermediate'));
+
+  const advancedLessons = Lessons.find({ _id: { $in: curriculum.advanced }})
+                                 .fetch()
+                                 .sort((a, b) => curriculum.advanced.indexOf(a._id) - curriculum.advanced.indexOf(b._id))
+                                 .map(l => new Lesson(l).set('type', 'advanced'));
 
   return {
     loading,
     curriculum,
-    lessons
+    beginnerLessons,
+    intermediateLessons,
+    advancedLessons
   };
-}, ({loading, curriculum, lessons}) => {
-  return loading ? <div>Loading...</div> : <BuildCurriculumPage curriculum={ curriculum } lessons={ lessons} />;
+}, ({loading, curriculum, beginnerLessons, intermediateLessons, advancedLessons}) => {
+  if (loading) {
+    return <div>Loading...</div>;
+  } else {
+    return <BuildCurriculumPage curriculum={ curriculum }
+                                beginnerLessons={ beginnerLessons }
+                                intermediateLessons={ intermediateLessons }
+                                advancedLessons={ advancedLessons } />;
+  }
 });
 
 export default BuildCurriculumPageContainer;

@@ -46,6 +46,43 @@ export const LessonForm = React.createClass({
           <input type="text" value={ this.state.lesson.title } onChange={ this.onTitleChange } />
         </div>
 
+        <div className="inline fields">
+          <label>Type</label>
+
+          <div className="field">
+            <div className="ui radio checkbox">
+              <input type="radio"
+                     name="type"
+                     value="beginner"
+                     checked={ this.state.lesson.isBeginner() }
+                     onChange={ this.onTypeChange } />
+              <label>Beginner</label>
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="ui radio checkbox">
+              <input type="radio"
+                     name="type"
+                     value="intermediate"
+                     checked={ this.state.lesson.isIntermediate() }
+                     onChange={ this.onTypeChange } />
+              <label>Intermediate</label>
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="ui radio checkbox">
+              <input type="radio"
+                     name="type"
+                     value="advanced"
+                     checked={ this.state.lesson.isAdvanced() }
+                     onChange={ this.onTypeChange } />
+              <label>Advanced</label>
+            </div>
+          </div>
+        </div>
+
         <div className={ classnames("field", {error: this.state.imageError}) }>
           <label>Image</label>
           <div>
@@ -69,6 +106,11 @@ export const LessonForm = React.createClass({
     this.setState({
       lesson,
       titleError: false
+    });
+  },
+  onTypeChange(event) {
+    this.setState({
+      lesson: this.state.lesson.set('type', event.target.value)
     });
   },
   onImageChange(event) {

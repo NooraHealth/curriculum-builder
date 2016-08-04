@@ -8,14 +8,27 @@ import { deleteFile as deleteImage } from '../uploads/image';
 
 import './modules';
 
-const Lesson = Immutable.Record({
+const BaseLesson = Immutable.Record({
   _id: '',
   title: '',
+  type: 'beginner',
   image: '',
   modules: Immutable.List()
 });
 
-export { Lesson };
+export class Lesson extends BaseLesson {
+  isBeginner() {
+    return this.type === 'beginner';
+  }
+
+  isIntermediate() {
+    return this.type === 'intermediate';
+  }
+
+  isAdvanced() {
+    return this.type === 'advanced';
+  }
+}
 
 Meteor.methods({
   'lessons.upsert'(lesson) {
