@@ -18,7 +18,7 @@ export const CurriculumForm = React.createClass({
     };
   },
   render() {
-    const { title, condition, language } = this.props.curriculum;
+    const { title, condition, language, introduction } = this.props.curriculum;
 
     return (
       <form className="ui form">
@@ -27,8 +27,7 @@ export const CurriculumForm = React.createClass({
           <input type="text"
                  name="title"
                  placeholder="New Title"
-                 defaultValue={ title } ref={ c => this._title = c }
-                 onChange={ this.onTitleChange } />
+                 defaultValue={ title } ref={ c => this._title = c } />
         </div>
 
         <div className="field">
@@ -43,6 +42,15 @@ export const CurriculumForm = React.createClass({
           <select className="ui fluid dropdown" defaultValue={ language || languages[0] } ref={ c => this._language = c }>
             { languages.map(language => <option key={ language } value={ language }>{ language }</option>) }
           </select>
+        </div>
+
+        <div className="field">
+          <label>Introduction</label>
+          <input type="text"
+                 name="introduction"
+                 placeholder="Hello World!"
+                 defaultValue={ introduction }
+                 ref={ c=> this._introduction = c } />
         </div>
 
         <button className="ui primary button" onClick={ this.onSave }>Save</button>
@@ -62,7 +70,8 @@ export const CurriculumForm = React.createClass({
                            .curriculum
                            .set('title', this._title.value)
                            .set('condition', this._condition.value)
-                           .set('language', this._language.value);
+                           .set('language', this._language.value)
+                           .set('introduction', this._introduction.value);
 
     this.props.onSave(curriculum.save());
   }
