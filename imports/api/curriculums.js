@@ -61,6 +61,17 @@ export class Curriculum extends BaseCurriculum {
 
     return curriculum.save();
   }
+
+  removeLesson(lesson) {
+    let curriculum = this;
+
+    ["beginner", "intermediate", "advanced"].forEach(level => {
+      const lessons = curriculum[level].filter(id => id !== lesson._id);
+      curriculum = curriculum.set(level, lessons);
+    });
+
+    return curriculum.save();
+  }
 }
 
 Meteor.methods({

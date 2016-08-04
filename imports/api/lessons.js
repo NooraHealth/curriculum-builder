@@ -44,6 +44,18 @@ export class Lesson extends BaseLesson {
       });
     });
   }
+
+  remove() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('lessons.remove', this._id, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(this);
+        }
+      });
+    });
+  }
 }
 
 Meteor.methods({

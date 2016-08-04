@@ -72,9 +72,7 @@ const BuildCurriculumPage = React.createClass({
                 return (
                   <LessonsListItem curriculum={ this.props.curriculum }
                                    lesson={ lesson }
-                                   key={ lesson._id }
-                                   onSave={ this.saveLesson }
-                                   onRemove={ this.removeLesson }/>
+                                   key={ lesson._id } />
                 );
               })
             }
@@ -107,7 +105,8 @@ const BuildCurriculumPage = React.createClass({
       if (this.state.showNewLessonForm) {
         return (
           <div className="ui segment">
-            <LessonForm lesson={ new Lesson() }
+            <LessonForm curriculum={ this.props.curriculum }
+                        lesson={ new Lesson() }
                         onSave={ this.afterSaveLesson }
                         onCancel={ this.hideNewLessonForm } />
           </div>
@@ -168,50 +167,8 @@ const BuildCurriculumPage = React.createClass({
       showNewLessonForm: false
     });
   },
-  removeLesson(lesson) {
-    Meteor.call('lessons.remove', lesson._id, (error, result) => {
-      if (error) {
-        console.error(error);
-      } else {
-        let lessons = this.state[`${lesson.type}Lessons`];
-        const index = lessons.findIndex(x => x._id === lesson._id);
-        lessons = lessons.delete(index);
-
-        this.setState({
-          [`${lesson.type}Lessons`]: lessons
-        });
-
-        this.persistLessonsOrder();
-      }
-    });
-  },
-  saveLesson(lesson) {
-    Meteor.call('lessons.upsert', lesson.toJS(), (error, results) => {
-      if (error) {
-        console.error(error);
-      } else {
-        let { beginnerLessons, showNewLessonForm } = this.state;
-        let lessons = this.state[`${lesson.type}Lessons`];
-
-        if ("insertedId" in results) {
-          lessons = lessons.push(lesson.set('_id', results.insertedId));
-          showNewLessonForm = false;
-        } else {
-          const index = lessons.findIndex(x => x._id === lesson._id);
-          lessons = lessons.set(index, lesson);
-        }
-
-        this.setState({
-          [`${lesson.type}Lessons`]: lessons,
-          showNewLessonForm
-        });
-
-        this.persistLessonsOrder();
-      }
-    });
-  },
   afterSaveLesson(promise) {
-    promise.then(lesson => this.props.curriculum.addLesson(lesson)).then(() => {
+    promise.then(() => {
       this.setState({
         showNewLessonForm: false
       });

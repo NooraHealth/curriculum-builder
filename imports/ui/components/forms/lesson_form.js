@@ -8,11 +8,13 @@ import { Progress } from '../semantic-ui/progress';
 import { imageURL, supportedMIMEs as imageMIMEs } from '../../../uploads/image';
 
 import classnames from '../../../utilities/classnames';
-import '../../../api/lessons';
+import { Curriculum } from '../../../api/curriculums';
+import { Lesson } from '../../../api/lessons';
 
 export const LessonForm = React.createClass({
   propTypes: {
-    lesson: React.PropTypes.object,
+    curriculum: React.PropTypes.instanceOf(Curriculum).isRequired,
+    lesson: React.PropTypes.instanceOf(Lesson).isRequired,
     onSave: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
   },
@@ -177,7 +179,11 @@ export const LessonForm = React.createClass({
       return;
     }
 
-    const promise = this.uploadImage().then(lesson => lesson.save());
+    const promise = this.uploadImage().then(lesson => lesson.save())
+                                      .then(lesson => {
+                                        this.props.curriculum.addLesson(lesson);
+                                        return lesson;
+                                      });
     this.props.onSave(promise);
   }
 });

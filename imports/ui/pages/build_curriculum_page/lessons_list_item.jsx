@@ -2,15 +2,13 @@ import React from 'react';
 
 import { LessonForm } from '../../components/forms/lesson_form';
 
+import { Curriculum } from '../../../api/curriculums';
 import { Lesson } from '../../../api/lessons';
 
 const LessonsListItem = React.createClass({
   propTypes: {
-    // Perhaps change this to an actual Lesson model or something?
-    curriculum: React.PropTypes.object.isRequired,
-    lesson: React.PropTypes.instanceOf(Lesson).isRequired,
-    onSave: React.PropTypes.func.isRequired,
-    onRemove: React.PropTypes.func.isRequired
+    curriculum: React.PropTypes.instanceOf(Curriculum).isRequired,
+    lesson: React.PropTypes.instanceOf(Lesson).isRequired
   },
   getInitialState() {
     return {
@@ -52,7 +50,8 @@ const LessonsListItem = React.createClass({
   },
   renderForm() {
     return (
-      <LessonForm lesson={ this.props.lesson }
+      <LessonForm curriculum={ this.props.curriculum }
+                  lesson={ this.props.lesson }
                   onSave={ this.onSave }
                   onCancel={ this.hideEditForm }/>
     );
@@ -71,17 +70,22 @@ const LessonsListItem = React.createClass({
       edit: true
     });
   },
-  onSave(lesson) {
-    this.props.onSave(lesson);
-    this.setState({
-      edit: false
+  onSave(promise) {
+    promise.then(lesson => {
+      if (lesson.type === this.props.lesson.type) {
+        this.setState({
+          edit: false
+        });
+      }
+    }, error => {
+      console.error(error);
     });
   },
   onRemove(event) {
     event.preventDefault();
 
     if (confirm(`Are you sure you want to remove ${this.props.lesson.title}?`)) {
-        this.props.onRemove(this.props.lesson);
+      this.props.lesson.remove().then(lesson => this.props.curriculum.removeLesson(lesson));
     }
   },
   hideEditForm(event) {
