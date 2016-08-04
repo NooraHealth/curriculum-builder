@@ -25,9 +25,43 @@ export class Curriculum extends BaseCurriculum {
       advanced: Immutable.List(properties && properties.advanced)
     }));
   }
-}
 
-export { Curriculum };
+  save() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('curriculums.upsert', this.toJS(), (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          let curriculum = this;
+
+          if ("insertedId" in results) {
+            curriculum = curriculum.set('_id', results.insertedId);
+          }
+
+          resolve(curriculum);
+        }
+      });
+    });
+  }
+
+  addLesson(lesson) {
+    const levels = ["beginner", "intermediate", "advanced"];
+    const otherLevels = levels.filter(x => x !== lesson.type);
+
+    let curriculum = this;
+
+    otherLevels.forEach(level => {
+      const lessons = curriculum[level].filter(id => id !== lesson._id);
+      curriculum = curriculum.set(level, lessons);
+    });
+
+    if (!curriculum[lesson.type].includes(id => id !== lesson._id)) {
+      curriculum = curriculum.set(lesson.type, curriculum[lesson.type].push(lesson._id));
+    }
+
+    return curriculum.save();
+  }
+}
 
 Meteor.methods({
   'curriculums.upsert'(curriculum) {

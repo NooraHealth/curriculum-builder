@@ -36,9 +36,9 @@ const BuildCurriculumPage = React.createClass({
   },
   getInitialState() {
     return {
-      beginnerLessons: Immutable.List(this.props.beginnerLessons),
-      intermediateLessons: Immutable.List(this.props.intermediateLessons),
-      advancedLessons: Immutable.List(this.props.advancedLessons),
+      // beginnerLessons: Immutable.List(this.props.beginnerLessons),
+      // intermediateLessons: Immutable.List(this.props.intermediateLessons),
+      // advancedLessons: Immutable.List(this.props.advancedLessons),
       showNewLessonForm: false
     };
   },
@@ -87,12 +87,15 @@ const BuildCurriculumPage = React.createClass({
   },
   renderLessonsSegment(type) {
     if (this.props.curriculum._id) {
+      const property = `${type}Lessons`;
+      const lessons = this.state[property] || this.props[property];
+
       return (
         <div>
           <div className="ui divider" />
           <h2>{ capitalize(type) }</h2>
 
-          { this.renderLessons(this.state[`${type}Lessons`]) }
+          { this.renderLessons(lessons) }
         </div>
       );
     } else {
@@ -105,7 +108,7 @@ const BuildCurriculumPage = React.createClass({
         return (
           <div className="ui segment">
             <LessonForm lesson={ new Lesson() }
-                        onSave={ this.saveLesson }
+                        onSave={ this.afterSaveLesson }
                         onCancel={ this.hideNewLessonForm } />
           </div>
         );
@@ -207,6 +210,15 @@ const BuildCurriculumPage = React.createClass({
       }
     });
   },
+  afterSaveLesson(promise) {
+    promise.then(lesson => this.props.curriculum.addLesson(lesson)).then(() => {
+      this.setState({
+        showNewLessonForm: false
+      });
+    }, error => {
+      console.error(error);
+    });
+  },
   onTitleChange() {
     if (this.state.titleError) {
       this.setState({
@@ -256,9 +268,9 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   return {
     loading,
     curriculum,
-    beginnerLessons,
-    intermediateLessons,
-    advancedLessons
+    beginnerLessons: Immutable.List(beginnerLessons),
+    intermediateLessons: Immutable.List(intermediateLessons),
+    advancedLessons: Immutable.List(advancedLessons)
   };
 }, ({loading, curriculum, beginnerLessons, intermediateLessons, advancedLessons}) => {
   if (loading) {

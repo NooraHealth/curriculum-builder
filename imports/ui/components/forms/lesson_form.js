@@ -8,6 +8,7 @@ import { Progress } from '../semantic-ui/progress';
 import { imageURL, supportedMIMEs as imageMIMEs } from '../../../uploads/image';
 
 import classnames from '../../../utilities/classnames';
+import '../../../api/lessons';
 
 export const LessonForm = React.createClass({
   propTypes: {
@@ -122,50 +123,61 @@ export const LessonForm = React.createClass({
       });
     }
   },
-  onSave(event) {
-    event.preventDefault();
-
-    let { titleError, imageError } = this.state;
-
-    titleError = !this.state.lesson.title;
-    imageError = this._image.files.length === 0 && !this.state.lesson.image;
+  // Performs form validation and sets state.
+  // Returns true iff the form is valid.
+  validate() {
+    const titleError = !this.state.lesson.title;
+    const imageError = this._image.files.length === 0 && !this.state.lesson.image;
 
     this.setState({
       titleError,
       imageError
     });
 
-    if (titleError || imageError) {
+    return !(titleError || imageError);
+  },
+  // Uploads image if necessary.
+  // Returns a promise. The resolved value is the new lesson.
+  uploadImage() {
+    return new Promise((resolve, reject) => {
+      if (this._image.files.length === 0) {
+        resolve(this.state.lesson);
+      }
+
+      const image = this._image.files[0];
+
+      const ImageUploader = new Slingshot.Upload('imageUploads');
+
+      ImageUploader.send(image, (error, url) => {
+        if (error) {
+          reject(error);
+        } else {
+          const filename = path.basename(url);
+          const lesson = this.state.lesson.set('image', filename);
+          this.setState({lesson});
+          resolve(lesson);
+        }
+      });
+
+      Tracker.autorun(c => {
+        const progress = ImageUploader.progress() || 0;
+
+        this.setState({progress});
+
+        if (progress === 1) {
+          c.stop();
+        }
+      });
+    });
+  },
+  onSave(event) {
+    event.preventDefault();
+
+    if (!this.validate()) {
       return;
     }
 
-    if (this._image.files.length === 0) {
-      return this.props.onSave(this.state.lesson);
-    }
-
-    const image = this._image.files[0];
-
-    const ImageUploader = new Slingshot.Upload('imageUploads');
-
-    ImageUploader.send(image, (error, url) => {
-      if (error) {
-        console.error(error);
-      } else {
-        const filename = path.basename(url);
-        const lesson = this.state.lesson.set('image', filename);
-        this.setState({lesson});
-        this.props.onSave(lesson);
-      }
-    });
-
-    Tracker.autorun(c => {
-      const progress = ImageUploader.progress() || 0;
-
-      this.setState({progress});
-
-      if (progress === 1) {
-        c.stop();
-      }
-    });
+    const promise = this.uploadImage().then(lesson => lesson.save());
+    this.props.onSave(promise);
   }
 });

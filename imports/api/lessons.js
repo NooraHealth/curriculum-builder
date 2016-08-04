@@ -28,6 +28,22 @@ export class Lesson extends BaseLesson {
   isAdvanced() {
     return this.type === 'advanced';
   }
+
+  save() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('lessons.upsert', this.toJS(), (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          let lesson = this;
+          if ("insertedId" in results) {
+            lesson = lesson.set('_id', results.insertedId);
+          }
+          resolve(lesson);
+        }
+      });
+    });
+  }
 }
 
 Meteor.methods({
