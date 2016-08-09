@@ -52,6 +52,7 @@ export const ModulesListItem = React.createClass({
         <i className="grabber move icon" />
         <span style={ titleStyle } onClick={ this.toggleExpand }>
           <b>{ type }</b> - { title }
+          { !this.props.module.is_active && " (Inactive)" }
         </span>
         <button className="negative ui icon button" onClick={ this.onRemove }>
           <i className="trash outline icon" />

@@ -295,6 +295,19 @@ export const ModuleForm = React.createClass({
       </div>
     );
   },
+  renderIsActive() {
+    return (
+      <div className="field">
+        <div className="ui checkbox">
+          <input type="checkbox"
+                 name="active"
+                 defaultChecked={ this.props.module.is_active }
+                 ref={ c => this.is_active = c } />
+          <label>This module is active</label>
+        </div>
+      </div>
+    );
+  },
 
   renderProgressBar() {
     if (this.state.fileUploadProgress && this.state.fileUploadProgress.size > 0) {
@@ -326,6 +339,7 @@ export const ModuleForm = React.createClass({
         { this.renderOptions() }
         { this.renderCorrectAudio() }
         { this.renderAudio() }
+        { this.renderIsActive() }
         { this.renderControlButtons() }
       </form>
     );
@@ -340,6 +354,7 @@ export const ModuleForm = React.createClass({
         { this.renderCorrectScenarioAnswer() }
         { this.renderCorrectAudio() }
         { this.renderAudio() }
+        { this.renderIsActive() }
         { this.renderControlButtons() }
       </form>
     );
@@ -354,6 +369,7 @@ export const ModuleForm = React.createClass({
         { this.renderCorrectBinaryAnswer() }
         { this.renderCorrectAudio() }
         { this.renderAudio() }
+        { this.renderIsActive() }
         { this.renderControlButtons() }
       </form>
     );
@@ -365,6 +381,7 @@ export const ModuleForm = React.createClass({
         { this.renderModuleType() }
         { this.renderTitle() }
         { this.renderVideo() }
+        { this.renderIsActive() }
         { this.renderControlButtons() }
       </form>
     );
@@ -377,6 +394,7 @@ export const ModuleForm = React.createClass({
         { this.renderTitle() }
         { this.renderImage() }
         { this.renderAudio() }
+        { this.renderIsActive() }
         { this.renderControlButtons() }
       </form>
     );
@@ -467,6 +485,8 @@ export const ModuleForm = React.createClass({
     });
 
     let module = this.props.module;
+
+    module = module.set('is_active', this.is_active.checked);
 
     simpleProperties[this.state.type].forEach(property => {
       module = module.set(property, this[property].value);
