@@ -55,7 +55,8 @@ export const ModuleForm = React.createClass({
     return {
       previews: this._defaultPreviewURLs(),
       type: this.props.module.type,
-      errors: new Errors()
+      errors: new Errors(),
+      options: Immutable.List(this.props.module.options)
     };
   },
   componentWillMount() {
@@ -148,10 +149,21 @@ export const ModuleForm = React.createClass({
         }
     };
 
+    const renderDeleteButton = i => {
+      if (this.state.previews.options_images.get(i)) {
+        return (
+          <button className="negative ui icon button"
+                  onClick={ this.removeOptionFactory(i) }>
+            <i className="trash outline icon" />
+          </button>
+        );
+      }
+    };
+
     const renderCheckboxes = () => {
       return [0, 1, 2, 3, 4, 5].map(i => {
         return (
-          <div key={ i } className={ classnames('field', {error: this.state.errors.options.get(i)}) }>
+          <div key={ i } className="field">
             <div className="ui checkbox">
               <input type="checkbox"
                      defaultChecked={ defaultChecked(i) }
@@ -162,6 +174,7 @@ export const ModuleForm = React.createClass({
                        accept={ imageMIMEs.join(',') }
                        ref={ c => this.options[i] = c }
                        onChange={ this.updateOptionsImagesPreviewFactory(i) }/>
+                { renderDeleteButton(i) }
               </label>
             </div>
           </div>
@@ -170,7 +183,7 @@ export const ModuleForm = React.createClass({
     };
 
     return (
-      <div className="grouped fields">
+      <div className={ classnames('grouped fields', {error: this.state.errors.options}) }>
         <label>Options</label>
 
         { renderCheckboxes() }
@@ -421,11 +434,11 @@ export const ModuleForm = React.createClass({
     });
 
     if (this.state.type === 'MULTIPLE_CHOICE') {
-      this.options.forEach((c, i) => {
-        if (c.files.length === 0 && !((this.props.module.options || [])[i])) {
-          errors = errors.setIn(['options', i], true);
-        }
-      });
+      const count = this.state.previews.options_images.filter(x => x).size;
+
+      if (count === 0 || count % 2 === 1) {
+        errors = errors.set('options', true);
+      }
     }
 
     return errors;
@@ -483,16 +496,18 @@ export const ModuleForm = React.createClass({
         if (c.files.length > 0) {
           return this._uploadFile(c.files[0], new Slingshot.Upload('imageUploads'));
         } else {
-          return this.props.module.options[i];
+          return this.state.options.get(i);
         }
       });
 
       Promise.all(promises).then(filenames => {
-        module = module.set('options', filenames);
+        const nonEmptyFilenames = filenames.filter(x => x);
+        module = module.set('options', nonEmptyFilenames);
 
         // set correct answer
         const choices = this.correctOptions.map(c => c.checked);
-        const correctAnswers = filenames.filter((_, i) => choices[i]);
+        const correctAnswers = filenames.filter((_, i) => choices[i])
+                                        .filter(x => x); // This is to ignore checked empty options.
         module = module.set('correct_answer', correctAnswers);
       });
 
@@ -542,10 +557,25 @@ export const ModuleForm = React.createClass({
       if (window.URL && event.target.files.length > 0) {
         const preview = window.URL.createObjectURL(event.target.files[0]);
         this.setState({
-          errors: this.state.errors.setIn(['options', i], false),
+          errors: this.state.errors.set('options', false),
           previews: this.state.previews.setIn(['options_images', i], preview)
         });
       }
+    };
+  },
+  removeOptionFactory(i) {
+    return event => {
+      event.preventDefault();
+
+      this.options[i].value = '';
+
+      const { module } = this.state;
+
+      this.setState({
+        errors: this.state.errors.set('options', false),
+        previews: this.state.previews.setIn(['options_images', i], false),
+        options: this.state.options.set(i, false)
+      });
     };
   },
 
@@ -557,7 +587,7 @@ export const ModuleForm = React.createClass({
       video: this.props.module.video && videoURL(this.props.module.video)
     });
 
-    if (this.props.module.type === 'MULTIPLE_CHOICE' && this.props.module.options && this.props.module.options.length === 6) {
+    if (this.props.module.type === 'MULTIPLE_CHOICE') {
       output = output.set('options_images', Immutable.List(this.props.module.options.map(imageURL)));
     }
 

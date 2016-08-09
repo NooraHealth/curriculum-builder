@@ -18,7 +18,8 @@ const BaseModule = Immutable.Record({
   correct_answer: undefined,
   correct_audio: undefined,
   video: undefined,
-  audio: undefined
+  audio: undefined,
+  is_active: true
 });
 
 export class Module extends BaseModule {
@@ -68,7 +69,8 @@ Meteor.methods({
       correct_answer: module.correct_answer,
       correct_audio: module.correct_audio,
       video: module.video,
-      audio: module.audio
+      audio: module.audio,
+      is_active: module.is_active
     }});
   },
   'modules.remove'(_id) {
