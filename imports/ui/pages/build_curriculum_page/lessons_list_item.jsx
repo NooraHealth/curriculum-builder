@@ -33,6 +33,7 @@ const LessonsListItem = React.createClass({
           <div className="header">
             <a href={ `/curriculums/${this.props.curriculum._id}/lessons/${this.props.lesson._id}` }>
               { this.props.lesson.title }
+              { !this.props.lesson.is_active && " (Inactive)" }
             </a>
           </div>
         </div>

@@ -55,6 +55,7 @@ const LessonPage = React.createClass({
              src={ imageURL(this.props.lesson.image) } />
         <div className="content">
           { this.props.lesson.title }
+          { !this.props.lesson.is_active && " (Inactive)" }
         </div>
       </h2>
     );
