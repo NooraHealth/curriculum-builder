@@ -175,7 +175,9 @@ const BuildCurriculumPage = React.createClass({
     }
   },
   onChangeOrder(type, order) {
-    const lessons = this.state[`${type}Lessons`].sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+    const property = `${type}Lessons`;
+    let lessons = this.state[property] || this.props[property];
+    lessons = lessons.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
 
     this.setState({
       [`${type}Lessons`]: lessons
@@ -185,7 +187,13 @@ const BuildCurriculumPage = React.createClass({
   },
   persistLessonsOrder() {
     ['beginner', 'intermediate', 'advanced'].forEach(type => {
-      Meteor.call('curriculums.setLessons', this.props.curriculum._id, type, this.state[`${type}Lessons`].map(x => x._id).toJS());
+      const property = `${type}Lessons`;
+      const lessons = this.state[property] || this.props[property];
+      const lessonIds = lessons.map(l => l._id);
+      Meteor.call('curriculums.setLessons', this.props.curriculum._id, type, lessonIds.toJS());
+      this.setState({
+        [property]: undefined
+      });
     });
     Meteor.call('curriculums.touch', this.props.curriculum._id);
   }
