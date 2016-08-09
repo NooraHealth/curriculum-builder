@@ -102,6 +102,16 @@ export const LessonForm = React.createClass({
           </div>
         </div>
 
+          <div className="field">
+            <div className="ui checkbox">
+              <input type="checkbox"
+                     name="active"
+                     checked={ this.state.lesson.is_active }
+                     onChange= { this.onActiveStateChange } />
+              <label>This lesson is active</label>
+            </div>
+          </div>
+
         { this.renderProgressBar() }
 
         <button className="ui primary button" onClick={ this.onSave }>Save</button>
@@ -129,6 +139,11 @@ export const LessonForm = React.createClass({
         imageError: false
       });
     }
+  },
+  onActiveStateChange(event) {
+    this.setState({
+      lesson: this.state.lesson.set('is_active', event.target.checked)
+    });
   },
   // Performs form validation and sets state.
   // Returns true iff the form is valid.

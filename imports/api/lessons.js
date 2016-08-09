@@ -13,7 +13,8 @@ const BaseLesson = Immutable.Record({
   title: '',
   type: 'beginner',
   image: '',
-  modules: Immutable.List()
+  modules: Immutable.List(),
+  is_active: true
 });
 
 export class Lesson extends BaseLesson {
@@ -96,7 +97,8 @@ Meteor.methods({
     return Lessons.upsert(lesson._id, {'$set': {
       title: lesson.title,
       image: lesson.image,
-      modules: lesson.modules
+      modules: lesson.modules,
+      is_active: lesson.is_active
     }});
   },
   'lessons.setModules'(_id, module_ids) {
