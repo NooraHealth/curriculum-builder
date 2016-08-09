@@ -17,6 +17,12 @@ const BaseLesson = Immutable.Record({
 });
 
 export class Lesson extends BaseLesson {
+  constructor(properties) {
+    super(Object.assign({}, properties, {
+      modules: Immutable.List(properties && properties.modules)
+    }));
+  }
+
   isBeginner() {
     return this.type === 'beginner';
   }
@@ -43,6 +49,29 @@ export class Lesson extends BaseLesson {
         }
       });
     });
+  }
+
+  addModule(module) {
+    if (!this.modules.includes(module._id)) {
+      let modules = this.modules;
+      modules = modules.push(module._id);
+      const lesson = this.set('modules', modules);
+      return lesson.save();
+    } else {
+      return this.save();
+    }
+  }
+
+  setModules(modules) {
+    const lesson = this.set('modules', modules.map(m => m._id));
+
+    return lesson.save();
+  }
+
+  removeModule(module) {
+    const modules = this.modules.filter(id => id !== module._id);
+    const lesson = this.set('modules', modules);
+    return lesson.save();
   }
 
   remove() {

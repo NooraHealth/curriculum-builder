@@ -13,24 +13,22 @@ import { ModuleForm } from '../components/forms/module_form';
 
 import { ModulesListItem } from './lesson_page/modules_list_item';
 
-import '../../api/curriculums';
+import { Curriculum } from '../../api/curriculums';
 import { Module } from '../../api/modules';
-import '../../api/lessons';
+import { Lesson } from '../../api/lessons';
 
 import { imageURL } from '../../uploads/image';
 
 const LessonPage = React.createClass({
+  propTypes: {
+    curriculum: React.PropTypes.instanceOf(Curriculum).isRequired,
+    lesson: React.PropTypes.instanceOf(Lesson).isRequired,
+    modules: React.PropTypes.instanceOf(Immutable.List).isRequired
+  },
   getInitialState() {
     return {
-      modules: Immutable.List(this.props.modules),
       showNewModuleForm: false
     };
-  },
-  componentDidMount() {
-    window.addEventListener('beforeunload', this.beforeWindowUnload);
-  },
-  componentWillUnmount() {
-    window.removeEventListener('beforeunload', this.beforeWindowUnload);
   },
   renderMenu() {
     return (
@@ -62,12 +60,11 @@ const LessonPage = React.createClass({
     );
   },
   renderModules() {
-    if (this.state.modules.size > 0) {
-      const items = this.state.modules.map(m => {
+    if (this.props.modules.size > 0) {
+      const items = this.props.modules.map(m => {
         return (
           <ModulesListItem key={ m._id }
-                           onSave={ this.saveModule }
-                           onRemove={ this.removeModule }
+                           lesson={ this.props.lesson }
                            module={ m } />
         );
       });
@@ -85,13 +82,14 @@ const LessonPage = React.createClass({
     if (this.state.showNewModuleForm) {
       return (
         <div className="ui segment">
-          <ModuleForm onSave={ this.createModule }
+          <ModuleForm didSave={ this.didCreateModule }
                       onCancel={ this.hideNewModuleForm }
+                      lesson={ this.props.lesson }
                       module={ new Module() } />
         </div>
       );
     } else {
-      const style = this.state.modules.size ? {marginTop: '1rem'} : {};
+      const style = this.props.modules.size ? {marginTop: '1rem'} : {};
       return (
         <button className="green ui labeled icon button"
                 onClick={ this.showNewModuleForm }
@@ -118,55 +116,14 @@ const LessonPage = React.createClass({
     );
   },
 
-  createModule(module) {
-    Meteor.call('modules.upsert', module.toJS(), (error, results) => {
-      if (error) {
-        console.error(error);
-      } else {
-        const modules = this.state.modules.push(module.set('_id', results.insertedId));
-
-        this.setState({
-          modules: modules,
-          showNewModuleForm: false
-        });
-
-        Meteor.call('curriculums.touch', this.props.curriculum._id);
-        this.persistModulesOrder();
-      }
+  didCreateModule(promise) {
+    promise.then(() => {
+      this.setState({
+        showNewModuleForm: false
+      });
+    }, error => {
+      console.error(error);
     });
-  },
-  saveModule(module) {
-    Meteor.call('modules.upsert', module.toJS(), (error, results) => {
-      if (error) {
-        console.error(error);
-      } else {
-        Meteor.call('curriculums.touch', this.props.curriculum._id);
-
-        let { modules } = this.state;
-        const index = modules.findIndex(x => x._id === module._id);
-        modules = modules.set(index, module);
-        this.setState({
-          modules
-        });
-      }
-    });
-  },
-  removeModule(module) {
-    Meteor.call('modules.remove', module._id, (error, results) => {
-      if (error) {
-        console.error(error);
-      } else {
-        let { modules } = this.state;
-        const index = modules.findIndex(x => x._id === module._id);
-        modules = modules.delete(index);
-        this.setState({
-          modules
-        });
-
-        Meteor.call('curriculums.touch', this.props.curriculum._id);
-        this.persistModulesOrder();
-      }
-    })
   },
   showNewModuleForm(event) {
     event.preventDefault();
@@ -181,42 +138,21 @@ const LessonPage = React.createClass({
     });
   },
   onChangeOrder(order) {
-    const modules = Immutable.List(order).map(_id => this.state.modules.find(x => x._id === _id));
-
-    let { changeOrderDebounceToken } = this.state;
-
-    if (changeOrderDebounceToken) {
-      clearTimeout(changeOrderDebounceToken);
-    }
-
-    changeOrderDebounceToken = setTimeout(this.persistModulesOrder, 10000);
+    const modules = Immutable.List(order).map(_id => this.props.modules.find(x => x._id === _id));
 
     this.setState({
       modules,
-      changeOrderDebounceToken
     });
+
+    this.persistModulesOrder();
   },
   persistModulesOrder() {
-    const { changeOrderDebounceToken } = this.state;
-
-    if (changeOrderDebounceToken) {
-      clearTimeout(changeOrderDebounceToken);
+    const modules = this.state.modules || this.props.modules;
+    this.props.lesson.setModules(modules).then(() => {
       this.setState({
-        changeOrderDebounceToken: undefined
+        modules: undefined
       });
-    }
-
-    Meteor.call('lessons.setModules', this.props.lesson._id, this.state.modules.map(x => x._id).toJS());
-  },
-  beforeWindowUnload(event) {
-    if (this.state.changeOrderDebounceToken) {
-      const message = "Please wait while unsaved changes are saved.";
-
-      this.persistModulesOrder();
-      event.returnValue = message;
-
-      return message;
-    }
+    });
   }
 });
 
@@ -227,11 +163,11 @@ const LessonPageContainer = createContainer(({ curriculum_id, lesson_id }) => {
 
   const loading = !curriculumsHandle.ready() || !lessonsHandle.ready() || !modulesHandle.ready();
 
-  const curriculum = Curriculums.findOne({ _id: curriculum_id });
+  const curriculum = new Curriculum(Curriculums.findOne({ _id: curriculum_id }));
 
-  const lesson = Lessons.findOne({ _id: lesson_id });
+  const lesson = new Lesson(Lessons.findOne({ _id: lesson_id }));
 
-  const module_ids = (lesson ? lesson.modules : []);
+  const module_ids = lesson.modules.toJS();
 
   const modules = Modules.find({ _id: { $in: module_ids }})
                          .fetch()
@@ -242,7 +178,7 @@ const LessonPageContainer = createContainer(({ curriculum_id, lesson_id }) => {
     loading,
     curriculum,
     lesson,
-    modules
+    modules: Immutable.List(modules)
   };
 }, ({ loading, curriculum, lesson, modules }) => {
   return loading ? <div>Loading...</div> : <LessonPage curriculum={ curriculum } lesson={ lesson } modules={ modules } />;

@@ -6,6 +6,7 @@ import path from 'path';
 
 import { Progress } from '../semantic-ui/progress';
 
+import { Lesson } from '../../../api/lessons';
 import { Module } from '../../../api/modules';
 
 import { audioURL, supportedMIMEs as audioMIMEs } from '../../../uploads/audio';
@@ -40,9 +41,15 @@ const fileProperties = {
 
 export const ModuleForm = React.createClass({
   propTypes: {
+    lesson: React.PropTypes.instanceOf(Lesson).isRequired,
     module: React.PropTypes.instanceOf(Module).isRequired,
     onCancel: React.PropTypes.func.isRequired,
-    onSave: React.PropTypes.func.isRequired
+    didSave: React.PropTypes.func
+  },
+  getDefaultProps() {
+    return {
+      didSave: () => {}
+    };
   },
   getInitialState() {
     return {
@@ -499,8 +506,10 @@ export const ModuleForm = React.createClass({
     }
 
     Promise.all(uploadPromises).then(() => {
-      this.props.onSave(module);
-    })
+      const promise = module.save().then(module => this.props.lesson.addModule(module));
+
+      this.props.didSave(promise);
+    });
 
   },
   onCancel(event) {

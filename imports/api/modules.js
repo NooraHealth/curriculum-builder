@@ -8,7 +8,7 @@ import { deleteFile as deleteAudio } from '../uploads/audio';
 import { deleteFile as deleteImage } from '../uploads/image';
 import { deleteFile as deleteVideo } from '../uploads/video';
 
-const Module = Immutable.Record({
+const BaseModule = Immutable.Record({
   _id: '',
   type: "MULTIPLE_CHOICE",
   title: undefined,
@@ -21,7 +21,37 @@ const Module = Immutable.Record({
   audio: undefined
 });
 
-export { Module };
+export class Module extends BaseModule {
+  save() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('modules.upsert', this.toJS(), (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          let module = this;
+
+          if ("insertedId" in results) {
+            module = module.set("_id", results.insertedId);
+          }
+
+          resolve(module);
+        }
+      });
+    });
+  }
+
+  remove() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('modules.remove', this._id, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(this);
+        }
+      });
+    });
+  }
+}
 
 Meteor.methods({
   'modules.upsert'(module) {
