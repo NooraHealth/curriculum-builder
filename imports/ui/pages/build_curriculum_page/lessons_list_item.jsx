@@ -52,7 +52,7 @@ const LessonsListItem = React.createClass({
     return (
       <LessonForm curriculum={ this.props.curriculum }
                   lesson={ this.props.lesson }
-                  onSave={ this.onSave }
+                  didSave={ this.didSave }
                   onCancel={ this.hideEditForm }/>
     );
   },
@@ -70,7 +70,7 @@ const LessonsListItem = React.createClass({
       edit: true
     });
   },
-  onSave(promise) {
+  didSave(promise) {
     promise.then(lesson => {
       if (lesson.type === this.props.lesson.type) {
         this.setState({

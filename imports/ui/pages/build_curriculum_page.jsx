@@ -104,7 +104,7 @@ const BuildCurriculumPage = React.createClass({
           <div className="ui segment">
             <LessonForm curriculum={ this.props.curriculum }
                         lesson={ new Lesson() }
-                        onSave={ this.afterSaveLesson }
+                        didSave={ this.didSaveLesson }
                         onCancel={ this.hideNewLessonForm } />
           </div>
         );
@@ -127,7 +127,7 @@ const BuildCurriculumPage = React.createClass({
         { this.renderMenu() }
 
         <CurriculumForm curriculum={ this.props.curriculum }
-                        onSave={ this.saveCurriculum } />
+                        didSave={ this.didSaveCurriculum } />
 
         { this.renderLessonsSegment('beginner') }
         { this.renderLessonsSegment('intermediate') }
@@ -137,7 +137,7 @@ const BuildCurriculumPage = React.createClass({
       </div>
     );
   },
-  saveCurriculum(promise) {
+  didSaveCurriculum(promise) {
     promise.then(curriculum => {
       FlowRouter.go(`/curriculums/${curriculum._id}`);
     }, error => {
@@ -158,7 +158,7 @@ const BuildCurriculumPage = React.createClass({
       showNewLessonForm: false
     });
   },
-  afterSaveLesson(promise) {
+  didSaveLesson(promise) {
     promise.then(() => {
       this.setState({
         showNewLessonForm: false

@@ -15,8 +15,13 @@ export const LessonForm = React.createClass({
   propTypes: {
     curriculum: React.PropTypes.instanceOf(Curriculum).isRequired,
     lesson: React.PropTypes.instanceOf(Lesson).isRequired,
-    onSave: React.PropTypes.func.isRequired,
+    didSave: React.PropTypes.func,
     onCancel: React.PropTypes.func.isRequired
+  },
+  getDefaultProps() {
+    return {
+      didSave: () => {}
+    };
   },
   getInitialState() {
     return {
@@ -184,6 +189,6 @@ export const LessonForm = React.createClass({
                                         this.props.curriculum.addLesson(lesson);
                                         return lesson;
                                       });
-    this.props.onSave(promise);
+    this.props.didSave(promise);
   }
 });

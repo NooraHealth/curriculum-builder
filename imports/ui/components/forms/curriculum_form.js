@@ -10,7 +10,12 @@ const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 export const CurriculumForm = React.createClass({
   propTypes: {
     curriculum: React.PropTypes.instanceOf(Curriculum).isRequired,
-    onSave: React.PropTypes.func.isRequired
+    didSave: React.PropTypes.func
+  },
+  getDefaultProps() {
+    return {
+      didSave: () => {}
+    };
   },
   getInitialState() {
     return {
@@ -73,6 +78,6 @@ export const CurriculumForm = React.createClass({
                            .set('language', this._language.value)
                            .set('introduction', this._introduction.value);
 
-    this.props.onSave(curriculum.save());
+    this.props.didSave(curriculum.save());
   }
 });
