@@ -121,6 +121,8 @@ Meteor.methods({
     const curriculum = Curriculums.findOne({ _id });
 
     Curriculums.remove({ _id });
-    curriculum.lessons.forEach(_id => Meteor.call('lessons.remove', _id));
+    ["beginner", "intermediate", "advanced"].forEach(type => {
+      curriculum[type].forEach(_id => Meteor.call('lessons.remove', _id));
+    });
   }
 })
