@@ -607,7 +607,7 @@ export const ModuleForm = React.createClass({
       video: this.props.module.video && videoURL(this.props.module.video)
     });
 
-    if (this.props.module.type === 'MULTIPLE_CHOICE') {
+    if (this.props.module.type === 'MULTIPLE_CHOICE' && this.props.module.options) {
       output = output.set('options_images', Immutable.List(this.props.module.options.map(imageURL)));
     }
 
