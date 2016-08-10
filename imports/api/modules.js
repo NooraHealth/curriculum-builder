@@ -60,6 +60,28 @@ Meteor.methods({
       throw new Meteor.Error('Modules.methods.upsert.not-logged-in', 'Must be logged in to update modules.');
     }
 
+    const existingModule = Modules.findOne({ _id: module._id });
+
+    if (existingModule) {
+      if (Meteor.isServer) {
+        if (existingModule.image && existingModule.image !== module.image) {
+          deleteImage(existingModule.image);
+        }
+
+        if (existingModule.correct_audio && existingModule.existing_audio !== module.correct_audio) {
+          deleteAudio(existingModule.correct_audio);
+        }
+
+        if (existingModule.audio && existingModule.audio !== module.audio) {
+          deleteAudio(existingModule.audio);
+        }
+
+        if (existingModule.video && existingModule.video !== module.video) {
+          deleteVideo(existingModule.video);
+        }
+      }
+    }
+
     return Modules.upsert(module._id, {'$set': {
       type: module.type,
       title: module.title,
