@@ -24,6 +24,10 @@ export class Lesson extends BaseLesson {
     }));
   }
 
+  isIntroduction() {
+    return this.type === 'introduction';
+  }
+
   isBeginner() {
     return this.type === 'beginner';
   }

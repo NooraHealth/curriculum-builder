@@ -8,12 +8,23 @@ import { Lesson } from '../../../api/lessons';
 const LessonsListItem = React.createClass({
   propTypes: {
     curriculum: React.PropTypes.instanceOf(Curriculum).isRequired,
-    lesson: React.PropTypes.instanceOf(Lesson).isRequired
+    lesson: React.PropTypes.instanceOf(Lesson).isRequired,
+    sortable: React.PropTypes.bool
+  },
+  getDefaultProps() {
+    return {
+      sortable: true
+    };
   },
   getInitialState() {
     return {
       edit: false
     };
+  },
+  renderGrabber() {
+    if (this.props.sortable) {
+      return <i className="grabber move icon" />;
+    }
   },
   renderContent() {
     const containerStyle = {
@@ -27,7 +38,7 @@ const LessonsListItem = React.createClass({
 
     return (
       <div style={ containerStyle }>
-        <i className="grabber move icon" />
+        { this.renderGrabber() }
 
         <div style={ contentStyle }>
           <div className="header">

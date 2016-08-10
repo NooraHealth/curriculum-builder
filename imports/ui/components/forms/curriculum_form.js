@@ -49,15 +49,6 @@ export const CurriculumForm = React.createClass({
           </select>
         </div>
 
-        <div className="field">
-          <label>Introduction</label>
-          <input type="text"
-                 name="introduction"
-                 placeholder="Hello World!"
-                 defaultValue={ introduction }
-                 ref={ c=> this._introduction = c } />
-        </div>
-
         <button className="ui primary button" onClick={ this.onSave }>Save</button>
       </form>
     );
@@ -75,8 +66,7 @@ export const CurriculumForm = React.createClass({
                            .curriculum
                            .set('title', this._title.value)
                            .set('condition', this._condition.value)
-                           .set('language', this._language.value)
-                           .set('introduction', this._introduction.value);
+                           .set('language', this._language.value);
 
     this.props.didSave(curriculum.save());
   }

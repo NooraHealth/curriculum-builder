@@ -11,7 +11,7 @@ const BaseCurriculum = Immutable.Record({
   title: '',
   condition: '',
   language: '',
-  introduction: '',
+  introduction: undefined,
   beginner: Immutable.List(),
   intermediate: Immutable.List(),
   advanced: Immutable.List()
@@ -55,8 +55,16 @@ export class Curriculum extends BaseCurriculum {
       curriculum = curriculum.set(level, lessons);
     });
 
-    if (!curriculum[lesson.type].includes(id => id !== lesson._id)) {
-      curriculum = curriculum.set(lesson.type, curriculum[lesson.type].push(lesson._id));
+    if (lesson.isIntroduction()) {
+      curriculum = curriculum.set('introduction', lesson._id);
+    } else {
+      if (!curriculum[lesson.type].includes(id => id !== lesson._id)) {
+        curriculum = curriculum.set(lesson.type, curriculum[lesson.type].push(lesson._id));
+      }
+
+      if (curriculum.introduction === lesson._id) {
+        curriculum = curriculum.set('introduction', null);
+      }
     }
 
     return curriculum.save();
@@ -124,5 +132,7 @@ Meteor.methods({
     ["beginner", "intermediate", "advanced"].forEach(type => {
       curriculum[type].forEach(_id => Meteor.call('lessons.remove', _id));
     });
+
+    Meteor.call('lessons.remove', curriculum.introduction);
   }
 })

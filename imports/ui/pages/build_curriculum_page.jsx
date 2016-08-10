@@ -80,6 +80,29 @@ const BuildCurriculumPage = React.createClass({
       return false;
     }
   },
+  renderIntroductionLesson() {
+    const renderLesson = () => {
+      if (this.props.introductionLesson._id) {
+        return (
+          <div className="ui list">
+            <LessonsListItem curriculum={ this.props.curriculum }
+                             lesson={ this.props.introductionLesson }
+                             sortable={ false } />
+          </div>
+        );
+      }
+    };
+
+    if (this.props.curriculum._id) {
+      return (
+        <div>
+          <div className="ui divider" />
+          <h2>Introduction</h2>
+          { renderLesson() }
+        </div>
+      );
+    }
+  },
   renderLessonsSegment(type) {
     if (this.props.curriculum._id) {
       const property = `${type}Lessons`;
@@ -129,6 +152,7 @@ const BuildCurriculumPage = React.createClass({
         <CurriculumForm curriculum={ this.props.curriculum }
                         didSave={ this.didSaveCurriculum } />
 
+        { this.renderIntroductionLesson() }
         { this.renderLessonsSegment('beginner') }
         { this.renderLessonsSegment('intermediate') }
         { this.renderLessonsSegment('advanced') }
@@ -198,6 +222,8 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
   const curriculum = new Curriculum(Curriculums.findOne({ _id }));
 
+  const introductionLesson = new Lesson(Lessons.findOne({ _id: curriculum.introduction })).set('type', 'introduction');
+
   const beginnerLessons = Lessons.find({ _id: { $in: curriculum.beginner.toJS() }})
                                  .fetch()
                                  .sort((a, b) => curriculum.beginner.indexOf(a._id) - curriculum.beginner.indexOf(b._id))
@@ -216,15 +242,17 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   return {
     loading,
     curriculum,
+    introductionLesson,
     beginnerLessons: Immutable.List(beginnerLessons),
     intermediateLessons: Immutable.List(intermediateLessons),
     advancedLessons: Immutable.List(advancedLessons)
   };
-}, ({loading, curriculum, beginnerLessons, intermediateLessons, advancedLessons}) => {
+}, ({loading, curriculum, introductionLesson, beginnerLessons, intermediateLessons, advancedLessons}) => {
   if (loading) {
     return <div>Loading...</div>;
   } else {
     return <BuildCurriculumPage curriculum={ curriculum }
+                                introductionLesson={ introductionLesson }
                                 beginnerLessons={ beginnerLessons }
                                 intermediateLessons={ intermediateLessons }
                                 advancedLessons={ advancedLessons } />;

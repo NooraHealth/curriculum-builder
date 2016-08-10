@@ -47,6 +47,8 @@ export const LessonForm = React.createClass({
       }
     };
 
+    const disableIntroduction = this.props.curriculum.introduction && this.props.curriculum.introduction !== this.state.lesson._id;
+
     return (
       <form className="ui form">
         <div className={ classnames("field", {error: this.state.titleError}) }>
@@ -56,6 +58,18 @@ export const LessonForm = React.createClass({
 
         <div className="inline fields">
           <label>Type</label>
+
+          <div className="field">
+            <div className="ui radio checkbox">
+              <input type="radio"
+                     name="type"
+                     value="introduction"
+                     disabled={ disableIntroduction }
+                     checked={ this.state.lesson.isIntroduction() }
+                     onChange={ this.onTypeChange } />
+              <label>Introduction</label>
+            </div>
+          </div>
 
           <div className="field">
             <div className="ui radio checkbox">
