@@ -94,6 +94,16 @@ Meteor.methods({
       throw new Meteor.Error('Lessons.methods.upsert.not-logged-in', 'Must be logged in to update lessons.');
     }
 
+    const existingLesson = Lessons.findOne({ _id: lesson._id });
+
+    if (existingLesson) {
+      if (Meteor.isServer) {
+        if (existingLesson.image !== lesson.image) {
+          deleteImage(existingLesson.image);
+        }
+      }
+    }
+
     return Lessons.upsert(lesson._id, {'$set': {
       title: lesson.title,
       image: lesson.image,
