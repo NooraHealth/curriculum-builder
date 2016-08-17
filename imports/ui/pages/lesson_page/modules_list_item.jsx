@@ -8,6 +8,7 @@ import { BinaryModule } from './binary_module';
 import { VideoModule } from './video_module';
 import { SlideModule } from './slide_module';
 
+import { Lesson } from '../../../api/lessons';
 import { Module } from '../../../api/modules';
 
 import { audioURL } from '../../../uploads/audio';
@@ -15,20 +16,13 @@ import { imageURL } from '../../../uploads/image';
 
 export const ModulesListItem = React.createClass({
   propTypes: {
-    edit: React.PropTypes.bool,
-    module: React.PropTypes.instanceOf(Module).isRequired,
-    onSave: React.PropTypes.func.isRequired,
-    onRemove: React.PropTypes.func.isRequired
+    lesson: React.PropTypes.instanceOf(Lesson).isRequired,
+    module: React.PropTypes.instanceOf(Module).isRequired
   },
   getInitialState() {
     return {
-      edit: this.props.edit,
+      edit: false,
       expanded: false
-    };
-  },
-  getDefaultProps() {
-    return {
-      edit: false
     };
   },
   renderHeader() {
@@ -58,6 +52,7 @@ export const ModulesListItem = React.createClass({
         <i className="grabber move icon" />
         <span style={ titleStyle } onClick={ this.toggleExpand }>
           <b>{ type }</b> - { title }
+          { !this.props.module.is_active && " (Inactive)" }
         </span>
         <button className="negative ui icon button" onClick={ this.onRemove }>
           <i className="trash outline icon" />
@@ -68,8 +63,9 @@ export const ModulesListItem = React.createClass({
   renderForm() {
     return (
       <div style={ {marginTop: '10px'} }>
-        <ModuleForm module={ this.props.module }
-                    onSave={ this.onSave }
+        <ModuleForm lesson={ this.props.lesson }
+                    module={ this.props.module }
+                    didSave={ this.didSave }
                     onCancel={ this.disableEdit } />
       </div>
     );
@@ -110,9 +106,10 @@ export const ModulesListItem = React.createClass({
     );
   },
 
-  onSave(module) {
-    this.props.onSave(module);
-    this.disableEdit();
+  didSave(promise) {
+    promise.then(() => this.disableEdit(), error => {
+      console.error(error);
+    });
   },
   onRemove(event) {
     event.preventDefault();
@@ -120,7 +117,7 @@ export const ModulesListItem = React.createClass({
     const title = this.props.module.title || this.props.module.question;
 
     if (confirm(`Are you sure you want to remove ${title}?`)) {
-      this.props.onRemove(this.props.module);
+      this.props.module.remove().then(module => this.props.lesson.removeModule(module));
     }
   },
   toggleExpand(event) {

@@ -4,19 +4,19 @@ import { audioURL } from '../../../uploads/audio';
 import { imageURL } from '../../../uploads/image';
 
 export function MultipleChoiceModule({module}) {
-  const isCorrectAnswer = i => {
-    const { options, correct_answer: correctAnswers } = module;
+  const isCorrectAnswer = option => {
+    const { correct_answer: correctAnswers } = module;
 
-    return correctAnswers.indexOf(options[i]) !== -1;
+    return correctAnswers.indexOf(option) !== -1;
   };
 
   const renderImages = () => {
-    return [0, 1, 2, 3, 4, 5].map(i => {
-      const style = isCorrectAnswer(i) ? { border: '5px solid #2C662D' } : {};
+    return module.options.map((option, i) => {
+      const style = isCorrectAnswer(option) ? { border: '5px solid #2C662D' } : {};
       return (
         <div key={ i } className="column">
           <img className="ui fluid image"
-               src={ imageURL(module.options[i]) }
+               src={ imageURL(option) }
                style={ style } />
         </div>
       );

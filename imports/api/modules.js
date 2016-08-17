@@ -8,7 +8,7 @@ import { deleteFile as deleteAudio } from '../uploads/audio';
 import { deleteFile as deleteImage } from '../uploads/image';
 import { deleteFile as deleteVideo } from '../uploads/video';
 
-const Module = Immutable.Record({
+const BaseModule = Immutable.Record({
   _id: '',
   type: "MULTIPLE_CHOICE",
   title: undefined,
@@ -18,15 +18,68 @@ const Module = Immutable.Record({
   correct_answer: undefined,
   correct_audio: undefined,
   video: undefined,
-  audio: undefined
+  audio: undefined,
+  is_active: true
 });
 
-export { Module };
+export class Module extends BaseModule {
+  save() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('modules.upsert', this.toJS(), (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          let module = this;
+
+          if ("insertedId" in results) {
+            module = module.set("_id", results.insertedId);
+          }
+
+          resolve(module);
+        }
+      });
+    });
+  }
+
+  remove() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('modules.remove', this._id, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(this);
+        }
+      });
+    });
+  }
+}
 
 Meteor.methods({
   'modules.upsert'(module) {
     if (!Meteor.userId()) {
       throw new Meteor.Error('Modules.methods.upsert.not-logged-in', 'Must be logged in to update modules.');
+    }
+
+    const existingModule = Modules.findOne({ _id: module._id });
+
+    if (existingModule) {
+      if (Meteor.isServer) {
+        if (existingModule.image && existingModule.image !== module.image) {
+          deleteImage(existingModule.image);
+        }
+
+        if (existingModule.correct_audio && existingModule.existing_audio !== module.correct_audio) {
+          deleteAudio(existingModule.correct_audio);
+        }
+
+        if (existingModule.audio && existingModule.audio !== module.audio) {
+          deleteAudio(existingModule.audio);
+        }
+
+        if (existingModule.video && existingModule.video !== module.video) {
+          deleteVideo(existingModule.video);
+        }
+      }
     }
 
     return Modules.upsert(module._id, {'$set': {
@@ -38,7 +91,8 @@ Meteor.methods({
       correct_answer: module.correct_answer,
       correct_audio: module.correct_audio,
       video: module.video,
-      audio: module.audio
+      audio: module.audio,
+      is_active: module.is_active
     }});
   },
   'modules.remove'(_id) {

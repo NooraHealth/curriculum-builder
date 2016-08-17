@@ -10,7 +10,12 @@ const languages  = ["Hindi", "English", "Kannada", "Tamil"];
 export const CurriculumForm = React.createClass({
   propTypes: {
     curriculum: React.PropTypes.instanceOf(Curriculum).isRequired,
-    onSave: React.PropTypes.func.isRequired
+    didSave: React.PropTypes.func
+  },
+  getDefaultProps() {
+    return {
+      didSave: () => {}
+    };
   },
   getInitialState() {
     return {
@@ -18,7 +23,7 @@ export const CurriculumForm = React.createClass({
     };
   },
   render() {
-    const { title, condition, language } = this.props.curriculum;
+    const { title, condition, language, introduction } = this.props.curriculum;
 
     return (
       <form className="ui form">
@@ -27,8 +32,7 @@ export const CurriculumForm = React.createClass({
           <input type="text"
                  name="title"
                  placeholder="New Title"
-                 defaultValue={ title } ref={ c => this._title = c }
-                 onChange={ this.onTitleChange } />
+                 defaultValue={ title } ref={ c => this._title = c } />
         </div>
 
         <div className="field">
@@ -64,6 +68,6 @@ export const CurriculumForm = React.createClass({
                            .set('condition', this._condition.value)
                            .set('language', this._language.value);
 
-    this.props.onSave(curriculum);
+    this.props.didSave(curriculum.save());
   }
 });
