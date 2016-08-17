@@ -24,6 +24,7 @@ import { Curriculum } from '../../api/curriculums';
 import { Lesson } from '../../api/lessons';
 
 import classnames from '../../utilities/classnames';
+import capitalize from '../../utilities/capitalize';
 
 const BuildCurriculumPage = React.createClass({
   mixins: [NagsMixin],
@@ -35,7 +36,6 @@ const BuildCurriculumPage = React.createClass({
   },
   getInitialState() {
     return {
-      lessons: Immutable.List(this.props.lessons),
       showNewLessonForm: false
     };
   },
@@ -57,19 +57,19 @@ const BuildCurriculumPage = React.createClass({
       </div>
     );
   },
-  renderLessons() {
-    if (this.state.lessons.size > 0) {
+  renderLessons(lessons) {
+    if (lessons.size > 0) {
+      const { type } = lessons.get(0);
+
       return (
         <div className="ui list">
-          <Sortable onChange={ this.onChangeOrder } options={ {handle: ".grabber"} }>
+          <Sortable onChange={ this.onChangeOrder.bind(this, type) } options={ {handle: ".grabber"} }>
             {
-              this.state.lessons.map(lesson => {
+              lessons.map(lesson => {
                 return (
                   <LessonsListItem curriculum={ this.props.curriculum }
                                    lesson={ lesson }
-                                   key={ lesson._id }
-                                   onSave={ this.saveLesson }
-                                   onRemove={ this.removeLesson }/>
+                                   key={ lesson._id } />
                 );
               })
             }
@@ -80,13 +80,40 @@ const BuildCurriculumPage = React.createClass({
       return false;
     }
   },
-  renderLessonsSegment() {
+  renderIntroductionLesson() {
+    const renderLesson = () => {
+      if (this.props.introductionLesson._id) {
+        return (
+          <div className="ui list">
+            <LessonsListItem curriculum={ this.props.curriculum }
+                             lesson={ this.props.introductionLesson }
+                             sortable={ false } />
+          </div>
+        );
+      }
+    };
+
     if (this.props.curriculum._id) {
       return (
         <div>
           <div className="ui divider" />
+          <h2>Introduction</h2>
+          { renderLesson() }
+        </div>
+      );
+    }
+  },
+  renderLessonsSegment(type) {
+    if (this.props.curriculum._id) {
+      const property = `${type}Lessons`;
+      const lessons = this.state[property] || this.props[property];
 
-          { this.renderLessons() }
+      return (
+        <div>
+          <div className="ui divider" />
+          <h2>{ capitalize(type) }</h2>
+
+          { this.renderLessons(lessons) }
         </div>
       );
     } else {
@@ -98,17 +125,17 @@ const BuildCurriculumPage = React.createClass({
       if (this.state.showNewLessonForm) {
         return (
           <div className="ui segment">
-            <LessonForm lesson={ new Lesson() }
-                        onSave={ this.saveLesson }
+            <LessonForm curriculum={ this.props.curriculum }
+                        lesson={ new Lesson() }
+                        didSave={ this.didSaveLesson }
                         onCancel={ this.hideNewLessonForm } />
           </div>
         );
       } else {
-        const style = this.state.lessons.size ? {marginTop: '1rem'} : {};
         return (
           <button className="green ui labeled icon button"
                   onClick={ this.showNewLessonForm }
-                  style={ style }>
+                  style={ {marginTop: '1rem'} }>
             <i className="plus icon" />
             New Lesson
           </button>
@@ -123,25 +150,22 @@ const BuildCurriculumPage = React.createClass({
         { this.renderMenu() }
 
         <CurriculumForm curriculum={ this.props.curriculum }
-                        onSave={ this.saveCurriculum } />
+                        didSave={ this.didSaveCurriculum } />
 
-        { this.renderLessonsSegment() }
+        { this.renderIntroductionLesson() }
+        { this.renderLessonsSegment('beginner') }
+        { this.renderLessonsSegment('intermediate') }
+        { this.renderLessonsSegment('advanced') }
 
         { this.renderNewLessonForm() }
       </div>
     );
   },
-  saveCurriculum(curriculum) {
-    Meteor.call('curriculums.upsert', curriculum.toJS(), (error, results) => {
-      if (error) {
-        console.error(error);
-      } else {
-        if ("insertedId" in results) {
-          FlowRouter.go(`/curriculums/${results.insertedId}`);
-        } else {
-          this.addNag("Curriculum saved");
-        }
-      }
+  didSaveCurriculum(promise) {
+    promise.then(curriculum => {
+      FlowRouter.go(`/curriculums/${curriculum._id}`);
+    }, error => {
+      console.error(error);
     });
   },
   showNewLessonForm(event) {
@@ -158,45 +182,13 @@ const BuildCurriculumPage = React.createClass({
       showNewLessonForm: false
     });
   },
-  removeLesson(lesson) {
-    Meteor.call('lessons.remove', lesson._id, (error, result) => {
-      if (error) {
-        console.error(error);
-      } else {
-        let { lessons } = this.state;
-        const index = lessons.findIndex(x => x._id === lesson._id);
-        lessons = lessons.delete(index);
-
-        this.setState({
-          lessons
-        });
-
-        this.persistLessonsOrder();
-      }
-    });
-  },
-  saveLesson(lesson) {
-    Meteor.call('lessons.upsert', lesson.toJS(), (error, results) => {
-      if (error) {
-        console.error(error);
-      } else {
-        let { lessons, showNewLessonForm } = this.state;
-
-        if ("insertedId" in results) {
-          lessons = lessons.push(lesson.set('_id', results.insertedId));
-          showNewLessonForm = false;
-        } else {
-          const index = lessons.findIndex(x => x._id === lesson._id);
-          lessons = lessons.set(index, lesson);
-        }
-
-        this.setState({
-          lessons,
-          showNewLessonForm
-        });
-
-        this.persistLessonsOrder();
-      }
+  didSaveLesson(promise) {
+    promise.then(() => {
+      this.setState({
+        showNewLessonForm: false
+      });
+    }, error => {
+      console.error(error);
     });
   },
   onTitleChange() {
@@ -206,18 +198,20 @@ const BuildCurriculumPage = React.createClass({
       });
     }
   },
-  onChangeOrder(order) {
-    const lessons = this.state.lessons.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+  onChangeOrder(type, order) {
+    const property = `${type}Lessons`;
+    const lessons = this.props[property].sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
 
     this.setState({
-      lessons
+      [property]: lessons
     });
 
-    this.persistLessonsOrder();
-  },
-  persistLessonsOrder() {
-    Meteor.call('curriculums.setLessons', this.props.curriculum._id, this.state.lessons.map(x => x._id).toJS());
-    Meteor.call('curriculums.touch', this.props.curriculum._id);
+    const curriculum = this.props.curriculum.set(type, Immutable.List(order));
+    curriculum.save().then(() => {
+      this.setState({
+        [property]: undefined
+      });
+    }, error => console.error(error));
   }
 });
 
@@ -228,20 +222,41 @@ const BuildCurriculumPageContainer = createContainer(({ _id }) => {
   const loading = !(curriculumsHandle.ready() && lessonsHandle.ready());
   const curriculum = new Curriculum(Curriculums.findOne({ _id }));
 
-  const lesson_ids = curriculum.lessons;
+  const introductionLesson = new Lesson(Lessons.findOne({ _id: curriculum.introduction })).set('type', 'introduction');
 
-  const lessons = Lessons.find({ _id: { $in: lesson_ids }})
-                         .fetch()
-                         .sort((a, b) => lesson_ids.indexOf(a._id) - lesson_ids.indexOf(b._id))
-                         .map(l => new Lesson(l));
+  const beginnerLessons = Lessons.find({ _id: { $in: curriculum.beginner.toJS() }})
+                                 .fetch()
+                                 .sort((a, b) => curriculum.beginner.indexOf(a._id) - curriculum.beginner.indexOf(b._id))
+                                 .map(l => new Lesson(l).set('type', 'beginner'));
+
+  const intermediateLessons = Lessons.find({ _id: { $in: curriculum.intermediate.toJS() }})
+                                     .fetch()
+                                     .sort((a, b) => curriculum.intermediate.indexOf(a._id) - curriculum.intermediate.indexOf(b._id))
+                                     .map(l => new Lesson(l).set('type', 'intermediate'));
+
+  const advancedLessons = Lessons.find({ _id: { $in: curriculum.advanced.toJS() }})
+                                 .fetch()
+                                 .sort((a, b) => curriculum.advanced.indexOf(a._id) - curriculum.advanced.indexOf(b._id))
+                                 .map(l => new Lesson(l).set('type', 'advanced'));
 
   return {
     loading,
     curriculum,
-    lessons
+    introductionLesson,
+    beginnerLessons: Immutable.List(beginnerLessons),
+    intermediateLessons: Immutable.List(intermediateLessons),
+    advancedLessons: Immutable.List(advancedLessons)
   };
-}, ({loading, curriculum, lessons}) => {
-  return loading ? <div>Loading...</div> : <BuildCurriculumPage curriculum={ curriculum } lessons={ lessons} />;
+}, ({loading, curriculum, introductionLesson, beginnerLessons, intermediateLessons, advancedLessons}) => {
+  if (loading) {
+    return <div>Loading...</div>;
+  } else {
+    return <BuildCurriculumPage curriculum={ curriculum }
+                                introductionLesson={ introductionLesson }
+                                beginnerLessons={ beginnerLessons }
+                                intermediateLessons={ intermediateLessons }
+                                advancedLessons={ advancedLessons } />;
+  }
 });
 
 export default BuildCurriculumPageContainer;

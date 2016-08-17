@@ -8,14 +8,89 @@ import { deleteFile as deleteImage } from '../uploads/image';
 
 import './modules';
 
-const Lesson = Immutable.Record({
+const BaseLesson = Immutable.Record({
   _id: '',
   title: '',
+  type: 'beginner',
   image: '',
-  modules: Immutable.List()
+  modules: Immutable.List(),
+  is_active: true
 });
 
-export { Lesson };
+export class Lesson extends BaseLesson {
+  constructor(properties) {
+    super(Object.assign({}, properties, {
+      modules: Immutable.List(properties && properties.modules)
+    }));
+  }
+
+  isIntroduction() {
+    return this.type === 'introduction';
+  }
+
+  isBeginner() {
+    return this.type === 'beginner';
+  }
+
+  isIntermediate() {
+    return this.type === 'intermediate';
+  }
+
+  isAdvanced() {
+    return this.type === 'advanced';
+  }
+
+  save() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('lessons.upsert', this.toJS(), (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          let lesson = this;
+          if ("insertedId" in results) {
+            lesson = lesson.set('_id', results.insertedId);
+          }
+          resolve(lesson);
+        }
+      });
+    });
+  }
+
+  addModule(module) {
+    if (!this.modules.includes(module._id)) {
+      let modules = this.modules;
+      modules = modules.push(module._id);
+      const lesson = this.set('modules', modules);
+      return lesson.save();
+    } else {
+      return this.save();
+    }
+  }
+
+  setModules(modules) {
+    const lesson = this.set('modules', modules.map(m => m._id));
+
+    return lesson.save();
+  }
+
+  removeModule(module) {
+    const modules = this.modules.filter(id => id !== module._id);
+    const lesson = this.set('modules', modules);
+    return lesson.save();
+  }
+
+  remove() {
+    return new Promise((resolve, reject) => {
+      Meteor.call('lessons.remove', this._id, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(this);
+        }
+      });
+    });
+  }
+}
 
 Meteor.methods({
   'lessons.upsert'(lesson) {
@@ -23,10 +98,21 @@ Meteor.methods({
       throw new Meteor.Error('Lessons.methods.upsert.not-logged-in', 'Must be logged in to update lessons.');
     }
 
+    const existingLesson = Lessons.findOne({ _id: lesson._id });
+
+    if (existingLesson) {
+      if (Meteor.isServer) {
+        if (existingLesson.image !== lesson.image) {
+          deleteImage(existingLesson.image);
+        }
+      }
+    }
+
     return Lessons.upsert(lesson._id, {'$set': {
       title: lesson.title,
       image: lesson.image,
-      modules: lesson.modules
+      modules: lesson.modules,
+      is_active: lesson.is_active
     }});
   },
   'lessons.setModules'(_id, module_ids) {

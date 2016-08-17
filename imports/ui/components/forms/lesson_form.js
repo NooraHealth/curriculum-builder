@@ -8,12 +8,20 @@ import { Progress } from '../semantic-ui/progress';
 import { imageURL, supportedMIMEs as imageMIMEs } from '../../../uploads/image';
 
 import classnames from '../../../utilities/classnames';
+import { Curriculum } from '../../../api/curriculums';
+import { Lesson } from '../../../api/lessons';
 
 export const LessonForm = React.createClass({
   propTypes: {
-    lesson: React.PropTypes.object,
-    onSave: React.PropTypes.func.isRequired,
+    curriculum: React.PropTypes.instanceOf(Curriculum).isRequired,
+    lesson: React.PropTypes.instanceOf(Lesson).isRequired,
+    didSave: React.PropTypes.func,
     onCancel: React.PropTypes.func.isRequired
+  },
+  getDefaultProps() {
+    return {
+      didSave: () => {}
+    };
   },
   getInitialState() {
     return {
@@ -39,11 +47,62 @@ export const LessonForm = React.createClass({
       }
     };
 
+    const disableIntroduction = this.props.curriculum.introduction && this.props.curriculum.introduction !== this.state.lesson._id;
+
     return (
       <form className="ui form">
         <div className={ classnames("field", {error: this.state.titleError}) }>
           <label>Title</label>
           <input type="text" value={ this.state.lesson.title } onChange={ this.onTitleChange } />
+        </div>
+
+        <div className="inline fields">
+          <label>Type</label>
+
+          <div className="field">
+            <div className="ui radio checkbox">
+              <input type="radio"
+                     name="type"
+                     value="introduction"
+                     disabled={ disableIntroduction }
+                     checked={ this.state.lesson.isIntroduction() }
+                     onChange={ this.onTypeChange } />
+              <label>Introduction</label>
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="ui radio checkbox">
+              <input type="radio"
+                     name="type"
+                     value="beginner"
+                     checked={ this.state.lesson.isBeginner() }
+                     onChange={ this.onTypeChange } />
+              <label>Beginner</label>
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="ui radio checkbox">
+              <input type="radio"
+                     name="type"
+                     value="intermediate"
+                     checked={ this.state.lesson.isIntermediate() }
+                     onChange={ this.onTypeChange } />
+              <label>Intermediate</label>
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="ui radio checkbox">
+              <input type="radio"
+                     name="type"
+                     value="advanced"
+                     checked={ this.state.lesson.isAdvanced() }
+                     onChange={ this.onTypeChange } />
+              <label>Advanced</label>
+            </div>
+          </div>
         </div>
 
         <div className={ classnames("field", {error: this.state.imageError}) }>
@@ -56,6 +115,16 @@ export const LessonForm = React.createClass({
                    onChange={ this.onImageChange } />
           </div>
         </div>
+
+          <div className="field">
+            <div className="ui checkbox">
+              <input type="checkbox"
+                     name="active"
+                     checked={ this.state.lesson.is_active }
+                     onChange= { this.onActiveStateChange } />
+              <label>This lesson is active</label>
+            </div>
+          </div>
 
         { this.renderProgressBar() }
 
@@ -71,6 +140,11 @@ export const LessonForm = React.createClass({
       titleError: false
     });
   },
+  onTypeChange(event) {
+    this.setState({
+      lesson: this.state.lesson.set('type', event.target.value)
+    });
+  },
   onImageChange(event) {
     if (window.URL && event.target.files.length > 0) {
       const imagePreview = window.URL.createObjectURL(event.target.files[0]);
@@ -80,50 +154,70 @@ export const LessonForm = React.createClass({
       });
     }
   },
-  onSave(event) {
-    event.preventDefault();
-
-    let { titleError, imageError } = this.state;
-
-    titleError = !this.state.lesson.title;
-    imageError = this._image.files.length === 0 && !this.state.lesson.image;
+  onActiveStateChange(event) {
+    this.setState({
+      lesson: this.state.lesson.set('is_active', event.target.checked)
+    });
+  },
+  // Performs form validation and sets state.
+  // Returns true iff the form is valid.
+  validate() {
+    const titleError = !this.state.lesson.title;
+    const imageError = this._image.files.length === 0 && !this.state.lesson.image;
 
     this.setState({
       titleError,
       imageError
     });
 
-    if (titleError || imageError) {
+    return !(titleError || imageError);
+  },
+  // Uploads image if necessary.
+  // Returns a promise. The resolved value is the new lesson.
+  uploadImage() {
+    return new Promise((resolve, reject) => {
+      if (this._image.files.length === 0) {
+        resolve(this.state.lesson);
+      }
+
+      const image = this._image.files[0];
+
+      const ImageUploader = new Slingshot.Upload('imageUploads');
+
+      ImageUploader.send(image, (error, url) => {
+        if (error) {
+          reject(error);
+        } else {
+          const filename = path.basename(url);
+          const lesson = this.state.lesson.set('image', filename);
+          this.setState({lesson});
+          resolve(lesson);
+        }
+      });
+
+      Tracker.autorun(c => {
+        const progress = ImageUploader.progress() || 0;
+
+        this.setState({progress});
+
+        if (progress === 1) {
+          c.stop();
+        }
+      });
+    });
+  },
+  onSave(event) {
+    event.preventDefault();
+
+    if (!this.validate()) {
       return;
     }
 
-    if (this._image.files.length === 0) {
-      return this.props.onSave(this.state.lesson);
-    }
-
-    const image = this._image.files[0];
-
-    const ImageUploader = new Slingshot.Upload('imageUploads');
-
-    ImageUploader.send(image, (error, url) => {
-      if (error) {
-        console.error(error);
-      } else {
-        const filename = path.basename(url);
-        const lesson = this.state.lesson.set('image', filename);
-        this.setState({lesson});
-        this.props.onSave(lesson);
-      }
-    });
-
-    Tracker.autorun(c => {
-      const progress = ImageUploader.progress() || 0;
-
-      this.setState({progress});
-
-      if (progress === 1) {
-        c.stop();
-      }
-    });
+    const promise = this.uploadImage().then(lesson => lesson.save())
+                                      .then(lesson => {
+                                        this.props.curriculum.addLesson(lesson);
+                                        return lesson;
+                                      });
+    this.props.didSave(promise);
   }
 });

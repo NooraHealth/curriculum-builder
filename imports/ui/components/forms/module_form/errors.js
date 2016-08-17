@@ -7,17 +7,11 @@ const BaseErrors = Immutable.Record({
   audio: false,
   correct_audio: false,
   video: false,
-  options: Immutable.List([false, false, false, false, false, false])
+  options: false
 });
 
 export default class Errors extends BaseErrors {
   any() {
-    return this.some((v, k) => {
-      if (k === 'options') {
-        return v.some(x => x);
-      } else {
-        return v;
-      }
-    });
+    return this.some(v => v);
   }
 }
