@@ -71,6 +71,8 @@ export class Curriculum extends BaseCurriculum {
   }
 
   removeLesson(lesson) {
+    console.log("Removing the lesson!!");
+    console.log(lesson);
     let curriculum = this;
 
     ["beginner", "intermediate", "advanced"].forEach(level => {
@@ -78,12 +80,18 @@ export class Curriculum extends BaseCurriculum {
       curriculum = curriculum.set(level, lessons);
     });
 
+    if(curriculum.introduction == lesson._id) {
+      curriculum = curriculum.set("introduction", "");
+    }
+
     return curriculum.save();
   }
 }
 
 Meteor.methods({
   'curriculums.upsert'(curriculum) {
+    console.log("upserting this");
+    console.log(curriculum);
     if (!Meteor.userId()) {
       throw new Meteor.Error('Curriculums.methods.upsert.not-logged-in', 'Must be logged in to update curriculums.');
     }

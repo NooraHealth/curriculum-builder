@@ -127,6 +127,8 @@ Meteor.methods({
     });
   },
   'lessons.remove'(_id) {
+    console.log("Removing lesson!");
+    console.log(_id);
     if (!Meteor.userId()) {
       throw new Meteor.Error('Lessons.methods.remove.not-logged-in', 'Must be logged in to update lessons.');
     }
