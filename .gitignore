@@ -1,4 +1,6 @@
 node_modules/
 *.swp
 settings.json
+mup.json
+mup.js
 npm-debug.log

@@ -38,7 +38,7 @@ export function videoURL(filename) {
 
 export function deleteFile(filename, callback) {
   return new Promise((resolve, reject) => {
-    knoxClient.deleteFile(`NooraHealthContent/Image/${filename}`, (error, results) => {
+    knoxClient.deleteFile(`NooraHealthContent/Video/${filename}`, (error, results) => {
       if (error) {
         reject(error);
       } else {
