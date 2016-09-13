@@ -11,7 +11,7 @@ const supportedMIMEs = ["video/mp4", "video/quicktime"];
 
 Slingshot.fileRestrictions("videoUploads", {
   allowedFileTypes: supportedMIMEs,
-  maxSize: 10 * 1024 * 1024
+  maxSize: 20 * 1024 * 1024
 });
 
 if (Meteor.isServer) {
