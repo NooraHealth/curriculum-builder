@@ -499,6 +499,7 @@ export const ModuleForm = React.createClass({
         promise.then(filename => {
           module = module.set(property, filename);
         }, error => {
+          alert(error);
           console.error(error);
         });
 

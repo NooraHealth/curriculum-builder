@@ -186,6 +186,7 @@ export const LessonForm = React.createClass({
 
       ImageUploader.send(image, (error, url) => {
         if (error) {
+          alert(error);
           reject(error);
         } else {
           const filename = path.basename(url);
