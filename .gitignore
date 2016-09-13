@@ -1,6 +1,7 @@
 node_modules/
 *.swp
 settings.json
+settings_yihang.json
 mup.json
 mup.js
 npm-debug.log
