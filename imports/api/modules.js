@@ -24,6 +24,8 @@ const BaseModule = Immutable.Record({
 
 export class Module extends BaseModule {
   save() {
+    console.log("Saving this module");
+    console.log(this.toJS());
     return new Promise((resolve, reject) => {
       Meteor.call('modules.upsert', this.toJS(), (error, results) => {
         if (error) {
